@@ -55,24 +55,23 @@ func (output *BaseInferOutput) UnmarshalJSON(data []byte) error {
 	output.Shape = tempStruct.Shape
 	output.Datatype = tempStruct.Datatype
 	output.Parameters = tempStruct.Parameters
-	dataConverter := converter.NewDataConverter()
 	switch tempStruct.Datatype {
 	case "FP32":
-		output.Data = dataConverter.ConvertInterfaceSliceToFloat32SliceAsInterface(tempStruct.Data)
+		output.Data = converter.ConvertInterfaceSliceToFloat32SliceAsInterface(tempStruct.Data)
 	case "FP64":
-		output.Data = dataConverter.ConvertInterfaceSliceToFloat64SliceAsInterface(tempStruct.Data)
+		output.Data = converter.ConvertInterfaceSliceToFloat64SliceAsInterface(tempStruct.Data)
 	case "INT32":
-		output.Data = dataConverter.ConvertInterfaceSliceToInt32SliceAsInterface(tempStruct.Data)
+		output.Data = converter.ConvertInterfaceSliceToInt32SliceAsInterface(tempStruct.Data)
 	case "INT64":
-		output.Data = dataConverter.ConvertInterfaceSliceToInt64SliceAsInterface(tempStruct.Data)
+		output.Data = converter.ConvertInterfaceSliceToInt64SliceAsInterface(tempStruct.Data)
 	case "UINT32":
-		output.Data = dataConverter.ConvertInterfaceSliceToUint32SliceAsInterface(tempStruct.Data)
+		output.Data = converter.ConvertInterfaceSliceToUint32SliceAsInterface(tempStruct.Data)
 	case "UINT64":
-		output.Data = dataConverter.ConvertInterfaceSliceToUint64SliceAsInterface(tempStruct.Data)
+		output.Data = converter.ConvertInterfaceSliceToUint64SliceAsInterface(tempStruct.Data)
 	case "BOOL":
-		output.Data = dataConverter.ConvertInterfaceSliceToBoolSliceAsInterface(tempStruct.Data)
+		output.Data = converter.ConvertInterfaceSliceToBoolSliceAsInterface(tempStruct.Data)
 	case "BYTES":
-		convertedData, err := dataConverter.ConvertInterfaceSliceToBytesSliceAsInterface(tempStruct.Data)
+		convertedData, err := converter.ConvertInterfaceSliceToBytesSliceAsInterface(tempStruct.Data)
 		if err != nil {
 			return err
 		}

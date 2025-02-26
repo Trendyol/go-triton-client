@@ -2,7 +2,6 @@ package http
 
 import (
 	"github.com/Trendyol/go-triton-client/base"
-	"github.com/Trendyol/go-triton-client/converter"
 )
 
 // InferInput is the HTTP implementation of the base.InferInput interface.
@@ -17,11 +16,10 @@ func NewInferInput(name string, datatype string, shape []int64, parameters map[s
 	}
 	return &InferInput{
 		BaseInferInput: &base.BaseInferInput{
-			Name:          name,
-			Shape:         shape,
-			Datatype:      datatype,
-			Parameters:    parameters,
-			DataConverter: converter.NewDataConverter(),
+			Name:       name,
+			Shape:      shape,
+			Datatype:   datatype,
+			Parameters: parameters,
 		},
 	}
 }

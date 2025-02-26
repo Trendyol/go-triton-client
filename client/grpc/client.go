@@ -6,7 +6,6 @@ import (
 	"fmt"
 	"github.com/Trendyol/go-triton-client/base"
 	"github.com/Trendyol/go-triton-client/client/grpc/grpc_generated_v2"
-	"github.com/Trendyol/go-triton-client/converter"
 	"github.com/Trendyol/go-triton-client/models"
 	"github.com/Trendyol/go-triton-client/options"
 	"google.golang.org/grpc"
@@ -22,7 +21,6 @@ type client struct {
 	insecure          bool
 	client            grpc_generated_v2.GRPCInferenceServiceClient
 	logger            *log.Logger
-	dataConverter     converter.DataConverter
 }
 
 // NewClient creates a new gRPCInferenceServerClient.
@@ -48,7 +46,6 @@ func NewClient(url string, verbose bool, connectionTimeout float64, networkTimeo
 		insecure:          insecureConnection,
 		client:            grpc_generated_v2.NewGRPCInferenceServiceClient(grpcConnection),
 		logger:            logger,
-		dataConverter:     converter.NewDataConverter(),
 	}, nil
 }
 
@@ -616,7 +613,7 @@ func (c *client) Infer(
 	options *options.InferOptions,
 ) (base.InferResult, error) {
 	// Prepare the Inference Request
-	requestWrapper := NewRequestWrapper(modelName, modelVersion, inputs, outputs, c.dataConverter, options)
+	requestWrapper := NewRequestWrapper(modelName, modelVersion, inputs, outputs, options)
 
 	request, err := requestWrapper.PrepareRequest()
 	if err != nil {
@@ -631,5 +628,5 @@ func (c *client) Infer(
 
 	// Map the response to the InferResult model
 	responseWrapper := NewResponseWrapper(resp)
-	return NewInferResult(responseWrapper, c.dataConverter, c.verbose)
+	return NewInferResult(responseWrapper, c.verbose)
 }

@@ -3,7 +3,6 @@ package grpc
 import (
 	"github.com/Trendyol/go-triton-client/base"
 	"github.com/Trendyol/go-triton-client/client/grpc/grpc_generated_v2"
-	"github.com/Trendyol/go-triton-client/mocks"
 	"go.uber.org/mock/gomock"
 	"reflect"
 	"testing"
@@ -46,14 +45,12 @@ func TestInferInput_GetTensor_WithRawData(t *testing.T) {
 	rawData := []byte{1, 2, 3, 4}
 	mockController := gomock.NewController(t)
 	defer mockController.Finish()
-	dataConverter := mocks.NewMockDataConverter(mockController)
 	input := &InferInput{
 		BaseInferInput: &base.BaseInferInput{
-			Name:          name,
-			Datatype:      datatype,
-			Shape:         shape,
-			RawData:       rawData,
-			DataConverter: dataConverter,
+			Name:     name,
+			Datatype: datatype,
+			Shape:    shape,
+			RawData:  rawData,
 		},
 	}
 	tensor := input.GetTensor().(*grpc_generated_v2.ModelInferRequest_InferInputTensor)
@@ -239,16 +236,13 @@ func TestInferInput_GetTensor(t *testing.T) {
 			ctrl := gomock.NewController(t)
 			defer ctrl.Finish()
 
-			mockDC := mocks.NewMockDataConverter(ctrl)
-
 			input := &InferInput{
 				BaseInferInput: &base.BaseInferInput{
-					Name:          "input0",
-					Datatype:      tc.datatype,
-					Shape:         tc.shape,
-					RawData:       tc.rawData,
-					Data:          tc.data,
-					DataConverter: mockDC,
+					Name:     "input0",
+					Datatype: tc.datatype,
+					Shape:    tc.shape,
+					RawData:  tc.rawData,
+					Data:     tc.data,
 				},
 			}
 

@@ -2,7 +2,6 @@ package base
 
 import (
 	"fmt"
-	"github.com/Trendyol/go-triton-client/converter"
 )
 
 // InferResult defines methods for retrieving various types of output data from an inference result.
@@ -44,7 +43,6 @@ type BaseInferResult struct {
 	OutputsResponse       InferOutputs
 	OutputNameToBufferMap map[string]int
 	Buffer                []byte
-	DataConverter         converter.DataConverter
 }
 
 func (r *BaseInferResult) GetOutput(name string) (InferOutput, error) {

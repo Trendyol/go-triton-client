@@ -4,19 +4,17 @@ import (
 	"fmt"
 	"github.com/Trendyol/go-triton-client/base"
 	"github.com/Trendyol/go-triton-client/client/grpc/grpc_generated_v2"
-	"github.com/Trendyol/go-triton-client/converter"
 	"github.com/Trendyol/go-triton-client/options"
 )
 
 // RequestWrapper is a struct that encapsulates all necessary data to create and manage a gRPC request for a model inference.
 // It includes model details, inputs, outputs, request-specific configurations, and parameters.
 type RequestWrapper struct {
-	ModelName     string
-	ModelVersion  string
-	Inputs        []base.InferInput
-	Outputs       []base.InferOutput
-	Options       *options.InferOptions
-	DataConverter converter.DataConverter
+	ModelName    string
+	ModelVersion string
+	Inputs       []base.InferInput
+	Outputs      []base.InferOutput
+	Options      *options.InferOptions
 }
 
 // NewRequestWrapper initializes and returns a new RequestWrapper instance
@@ -25,7 +23,6 @@ func NewRequestWrapper(
 	modelName, modelVersion string,
 	inputs []base.InferInput,
 	outputs []base.InferOutput,
-	dataConverter converter.DataConverter,
 	opts *options.InferOptions,
 ) *RequestWrapper {
 	if opts == nil {
@@ -44,12 +41,11 @@ func NewRequestWrapper(
 		}
 	}
 	return &RequestWrapper{
-		ModelName:     modelName,
-		ModelVersion:  modelVersion,
-		Inputs:        inputs,
-		Outputs:       outputs,
-		DataConverter: dataConverter,
-		Options:       opts,
+		ModelName:    modelName,
+		ModelVersion: modelVersion,
+		Inputs:       inputs,
+		Outputs:      outputs,
+		Options:      opts,
 	}
 }
 

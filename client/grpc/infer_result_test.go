@@ -1,7 +1,6 @@
 package grpc
 
 import (
-	"errors"
 	"github.com/Trendyol/go-triton-client/client/grpc/grpc_generated_v2"
 	"github.com/Trendyol/go-triton-client/mocks"
 	"testing"
@@ -30,9 +29,7 @@ func TestNewInferResult_Success(t *testing.T) {
 
 	mockResponseWrapper.EXPECT().GetResponse().Return(response).Times(1)
 
-	mockDataConverter := mocks.NewMockDataConverter(mockController)
-
-	result, err := NewInferResult(mockResponseWrapper, mockDataConverter, true)
+	result, err := NewInferResult(mockResponseWrapper, true)
 	if err != nil {
 		t.Errorf("Expected no error, got %v", err)
 	}
@@ -49,9 +46,7 @@ func TestNewInferResult_InvalidResponseType(t *testing.T) {
 
 	mockResponseWrapper.EXPECT().GetResponse().Return("invalid_response").Times(1)
 
-	mockDataConverter := mocks.NewMockDataConverter(mockController)
-
-	result, err := NewInferResult(mockResponseWrapper, mockDataConverter, true)
+	result, err := NewInferResult(mockResponseWrapper, true)
 	if err == nil {
 		t.Error("Expected error, got nil")
 	}
@@ -84,9 +79,7 @@ func TestNewInferResult_Verbose(t *testing.T) {
 
 	mockResponseWrapper.EXPECT().GetResponse().Return(response).Times(1)
 
-	mockDataConverter := mocks.NewMockDataConverter(mockController)
-
-	result, err := NewInferResult(mockResponseWrapper, mockDataConverter, true)
+	result, err := NewInferResult(mockResponseWrapper, true)
 	if err != nil {
 		t.Errorf("Expected no error, got %v", err)
 	}
@@ -110,9 +103,7 @@ func TestNewInferResult_NoOutputs(t *testing.T) {
 
 	mockResponseWrapper.EXPECT().GetResponse().Return(response).Times(1)
 
-	mockDataConverter := mocks.NewMockDataConverter(mockController)
-
-	result, err := NewInferResult(mockResponseWrapper, mockDataConverter, true)
+	result, err := NewInferResult(mockResponseWrapper, true)
 	if err != nil {
 		t.Errorf("Expected no error, got %v", err)
 	}
@@ -142,10 +133,7 @@ func TestInferResult_AsFloat16Slice_Success(t *testing.T) {
 
 	mockResponseWrapper.EXPECT().GetResponse().Return(response).Times(1)
 
-	mockDataConverter := mocks.NewMockDataConverter(mockController)
-	mockDataConverter.EXPECT().DeserializeFloat16Tensor(gomock.Any()).Return([]float64{1, 2}, nil)
-
-	resultInterface, err := NewInferResult(mockResponseWrapper, mockDataConverter, true)
+	resultInterface, err := NewInferResult(mockResponseWrapper, true)
 	if err != nil {
 		t.Errorf("Expected no error, got %v", err)
 	}
@@ -181,10 +169,7 @@ func TestInferResult_AsFloat32Slice_Success(t *testing.T) {
 
 	mockResponseWrapper.EXPECT().GetResponse().Return(response).Times(1)
 
-	mockDataConverter := mocks.NewMockDataConverter(mockController)
-	mockDataConverter.EXPECT().DeserializeFloat32Tensor(gomock.Any()).Return([]float32{1, 2}, nil)
-
-	resultInterface, err := NewInferResult(mockResponseWrapper, mockDataConverter, true)
+	resultInterface, err := NewInferResult(mockResponseWrapper, true)
 	if err != nil {
 		t.Errorf("Expected no error, got %v", err)
 	}
@@ -220,10 +205,7 @@ func TestInferResult_AsFloat64Slice_Success(t *testing.T) {
 
 	mockResponseWrapper.EXPECT().GetResponse().Return(response).Times(1)
 
-	mockDataConverter := mocks.NewMockDataConverter(mockController)
-	mockDataConverter.EXPECT().DeserializeFloat64Tensor(gomock.Any()).Return([]float64{1, 2}, nil)
-
-	resultInterface, err := NewInferResult(mockResponseWrapper, mockDataConverter, true)
+	resultInterface, err := NewInferResult(mockResponseWrapper, true)
 	if err != nil {
 		t.Errorf("Expected no error, got %v", err)
 	}
@@ -259,10 +241,7 @@ func TestInferResult_AsInt8Slice_Success(t *testing.T) {
 
 	mockResponseWrapper.EXPECT().GetResponse().Return(response).Times(1)
 
-	mockDataConverter := mocks.NewMockDataConverter(mockController)
-	mockDataConverter.EXPECT().DeserializeInt8Tensor(gomock.Any()).Return([]int8{1, 2}, nil)
-
-	resultInterface, err := NewInferResult(mockResponseWrapper, mockDataConverter, true)
+	resultInterface, err := NewInferResult(mockResponseWrapper, true)
 	if err != nil {
 		t.Errorf("Expected no error, got %v", err)
 	}
@@ -298,10 +277,7 @@ func TestInferResult_AsInt16Slice_Success(t *testing.T) {
 
 	mockResponseWrapper.EXPECT().GetResponse().Return(response).Times(1)
 
-	mockDataConverter := mocks.NewMockDataConverter(mockController)
-	mockDataConverter.EXPECT().DeserializeInt16Tensor(gomock.Any()).Return([]int16{1, 2}, nil)
-
-	resultInterface, err := NewInferResult(mockResponseWrapper, mockDataConverter, true)
+	resultInterface, err := NewInferResult(mockResponseWrapper, true)
 	if err != nil {
 		t.Errorf("Expected no error, got %v", err)
 	}
@@ -337,10 +313,7 @@ func TestInferResult_AsInt32Slice_Success(t *testing.T) {
 
 	mockResponseWrapper.EXPECT().GetResponse().Return(response).Times(1)
 
-	mockDataConverter := mocks.NewMockDataConverter(mockController)
-	mockDataConverter.EXPECT().DeserializeInt32Tensor(gomock.Any()).Return([]int32{1, 2}, nil)
-
-	resultInterface, err := NewInferResult(mockResponseWrapper, mockDataConverter, true)
+	resultInterface, err := NewInferResult(mockResponseWrapper, true)
 	if err != nil {
 		t.Errorf("Expected no error, got %v", err)
 	}
@@ -376,10 +349,7 @@ func TestInferResult_AsInt64Slice_Success(t *testing.T) {
 
 	mockResponseWrapper.EXPECT().GetResponse().Return(response).Times(1)
 
-	mockDataConverter := mocks.NewMockDataConverter(mockController)
-	mockDataConverter.EXPECT().DeserializeInt64Tensor(gomock.Any()).Return([]int64{1, 2}, nil)
-
-	resultInterface, err := NewInferResult(mockResponseWrapper, mockDataConverter, true)
+	resultInterface, err := NewInferResult(mockResponseWrapper, true)
 	if err != nil {
 		t.Errorf("Expected no error, got %v", err)
 	}
@@ -415,10 +385,7 @@ func TestInferResult_AsUint8Slice_Success(t *testing.T) {
 
 	mockResponseWrapper.EXPECT().GetResponse().Return(response).Times(1)
 
-	mockDataConverter := mocks.NewMockDataConverter(mockController)
-	mockDataConverter.EXPECT().DeserializeUint8Tensor(gomock.Any()).Return([]uint8{1, 2}, nil)
-
-	resultInterface, err := NewInferResult(mockResponseWrapper, mockDataConverter, true)
+	resultInterface, err := NewInferResult(mockResponseWrapper, true)
 	if err != nil {
 		t.Errorf("Expected no error, got %v", err)
 	}
@@ -454,10 +421,7 @@ func TestInferResult_AsUint16Slice_Success(t *testing.T) {
 
 	mockResponseWrapper.EXPECT().GetResponse().Return(response).Times(1)
 
-	mockDataConverter := mocks.NewMockDataConverter(mockController)
-	mockDataConverter.EXPECT().DeserializeUint16Tensor(gomock.Any()).Return([]uint16{1, 2}, nil)
-
-	resultInterface, err := NewInferResult(mockResponseWrapper, mockDataConverter, true)
+	resultInterface, err := NewInferResult(mockResponseWrapper, true)
 	if err != nil {
 		t.Errorf("Expected no error, got %v", err)
 	}
@@ -493,10 +457,7 @@ func TestInferResult_AsUint32Slice_Success(t *testing.T) {
 
 	mockResponseWrapper.EXPECT().GetResponse().Return(response).Times(1)
 
-	mockDataConverter := mocks.NewMockDataConverter(mockController)
-	mockDataConverter.EXPECT().DeserializeUint32Tensor(gomock.Any()).Return([]uint32{1, 2}, nil)
-
-	resultInterface, err := NewInferResult(mockResponseWrapper, mockDataConverter, true)
+	resultInterface, err := NewInferResult(mockResponseWrapper, true)
 	if err != nil {
 		t.Errorf("Expected no error, got %v", err)
 	}
@@ -532,10 +493,7 @@ func TestInferResult_AsUint64Slice_Success(t *testing.T) {
 
 	mockResponseWrapper.EXPECT().GetResponse().Return(response).Times(1)
 
-	mockDataConverter := mocks.NewMockDataConverter(mockController)
-	mockDataConverter.EXPECT().DeserializeUint64Tensor(gomock.Any()).Return([]uint64{1, 2}, nil)
-
-	resultInterface, err := NewInferResult(mockResponseWrapper, mockDataConverter, true)
+	resultInterface, err := NewInferResult(mockResponseWrapper, true)
 	if err != nil {
 		t.Errorf("Expected no error, got %v", err)
 	}
@@ -571,10 +529,7 @@ func TestInferResult_AsBoolSlice_Success(t *testing.T) {
 
 	mockResponseWrapper.EXPECT().GetResponse().Return(response).Times(1)
 
-	mockDataConverter := mocks.NewMockDataConverter(mockController)
-	mockDataConverter.EXPECT().DeserializeBoolTensor(gomock.Any()).Return([]bool{true}, nil)
-
-	resultInterface, err := NewInferResult(mockResponseWrapper, mockDataConverter, true)
+	resultInterface, err := NewInferResult(mockResponseWrapper, true)
 	if err != nil {
 		t.Errorf("Expected no error, got %v", err)
 	}
@@ -610,10 +565,7 @@ func TestInferResult_AsBytesSlice_Success(t *testing.T) {
 
 	mockResponseWrapper.EXPECT().GetResponse().Return(response).Times(1)
 
-	mockDataConverter := mocks.NewMockDataConverter(mockController)
-	mockDataConverter.EXPECT().DeserializeBytesTensor(gomock.Any()).Return([]string{"16"}, nil)
-
-	resultInterface, err := NewInferResult(mockResponseWrapper, mockDataConverter, true)
+	resultInterface, err := NewInferResult(mockResponseWrapper, true)
 	if err != nil {
 		t.Errorf("Expected no error, got %v", err)
 	}
@@ -651,9 +603,7 @@ func TestInferResult_AsSlice_OutputNotFound(t *testing.T) {
 
 	mockResponseWrapper.EXPECT().GetResponse().Return(response).Times(1)
 
-	mockDataConverter := mocks.NewMockDataConverter(mockController)
-
-	resultInterface, err := NewInferResult(mockResponseWrapper, mockDataConverter, true)
+	resultInterface, err := NewInferResult(mockResponseWrapper, true)
 	if err != nil {
 		t.Errorf("Expected no error, got %v", err)
 	}
@@ -665,45 +615,6 @@ func TestInferResult_AsSlice_OutputNotFound(t *testing.T) {
 	}
 	if err.Error() != "output output0 not found" {
 		t.Errorf("Expected error 'output output0 not found', got %v", err)
-	}
-}
-
-func TestInferResult_AsSlice_DeserializeError(t *testing.T) {
-	mockController := gomock.NewController(t)
-	defer mockController.Finish()
-
-	mockResponseWrapper := mocks.NewMockResponseWrapper(mockController)
-
-	response := &grpc_generated_v2.ModelInferResponse{
-		ModelName:    "test_model",
-		ModelVersion: "1",
-		Outputs: []*grpc_generated_v2.ModelInferResponse_InferOutputTensor{
-			{
-				Name:     "output0",
-				Datatype: "FP32",
-				Shape:    []int64{1, 2},
-			},
-		},
-		RawOutputContents: [][]byte{make([]byte, 16)},
-	}
-
-	mockResponseWrapper.EXPECT().GetResponse().Return(response).Times(1)
-
-	mockDataConverter := mocks.NewMockDataConverter(mockController)
-	mockDataConverter.EXPECT().DeserializeFloat32Tensor(gomock.Any()).Return(nil, errors.New("deserialize error"))
-
-	resultInterface, err := NewInferResult(mockResponseWrapper, mockDataConverter, true)
-	if err != nil {
-		t.Errorf("Expected no error, got %v", err)
-	}
-	result := resultInterface.(*InferResult)
-
-	_, err = result.AsFloat32Slice("output0")
-	if err == nil {
-		t.Error("Expected error, got nil")
-	}
-	if err.Error() != "deserialize error" {
-		t.Errorf("Expected error 'deserialize error', got %v", err)
 	}
 }
 
@@ -728,9 +639,7 @@ func TestInferResult_GetOutput_Found(t *testing.T) {
 
 	mockResponseWrapper.EXPECT().GetResponse().Return(response).Times(1)
 
-	mockDataConverter := mocks.NewMockDataConverter(mockController)
-
-	resultInterface, err := NewInferResult(mockResponseWrapper, mockDataConverter, true)
+	resultInterface, err := NewInferResult(mockResponseWrapper, true)
 	if err != nil {
 		t.Errorf("Expected no error, got %v", err)
 	}
@@ -768,9 +677,7 @@ func TestInferResult_GetOutput_NotFound(t *testing.T) {
 
 	mockResponseWrapper.EXPECT().GetResponse().Return(response).Times(1)
 
-	mockDataConverter := mocks.NewMockDataConverter(mockController)
-
-	resultInterface, err := NewInferResult(mockResponseWrapper, mockDataConverter, true)
+	resultInterface, err := NewInferResult(mockResponseWrapper, true)
 	if err != nil {
 		t.Errorf("Expected no error, got %v", err)
 	}
@@ -806,9 +713,7 @@ func TestInferResult_AsSlice_MissingBufferMapEntry(t *testing.T) {
 
 	mockResponseWrapper.EXPECT().GetResponse().Return(response).Times(1)
 
-	mockDataConverter := mocks.NewMockDataConverter(mockController)
-
-	resultInterface, err := NewInferResult(mockResponseWrapper, mockDataConverter, true)
+	resultInterface, err := NewInferResult(mockResponseWrapper, true)
 	if err != nil {
 		t.Errorf("Expected no error, got %v", err)
 	}

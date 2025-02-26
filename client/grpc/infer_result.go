@@ -13,7 +13,7 @@ type InferResult struct {
 }
 
 // NewInferResult creates a new gRPC InferResult instance.
-func NewInferResult(responseWrapper base.ResponseWrapper, dataConverter converter.DataConverter, verbose bool) (base.InferResult, error) {
+func NewInferResult(responseWrapper base.ResponseWrapper, verbose bool) (base.InferResult, error) {
 	result := base.InferOutputs{}
 	buffer := []byte{}
 	outputNameToBufferMap := make(map[string]int)
@@ -55,61 +55,60 @@ func NewInferResult(responseWrapper base.ResponseWrapper, dataConverter converte
 			OutputsResponse:       result,
 			OutputNameToBufferMap: outputNameToBufferMap,
 			Buffer:                buffer,
-			DataConverter:         dataConverter,
 		},
 	}, nil
 }
 
 func (r *InferResult) AsInt8Slice(name string) ([]int8, error) {
-	return getAsSlice[int8](name, r, r.DataConverter.DeserializeInt8Tensor)
+	return getAsSlice[int8](name, r, converter.DeserializeInt8Tensor)
 }
 
 func (r *InferResult) AsInt16Slice(name string) ([]int16, error) {
-	return getAsSlice[int16](name, r, r.DataConverter.DeserializeInt16Tensor)
+	return getAsSlice[int16](name, r, converter.DeserializeInt16Tensor)
 }
 
 func (r *InferResult) AsInt32Slice(name string) ([]int32, error) {
-	return getAsSlice[int32](name, r, r.DataConverter.DeserializeInt32Tensor)
+	return getAsSlice[int32](name, r, converter.DeserializeInt32Tensor)
 }
 
 func (r *InferResult) AsInt64Slice(name string) ([]int64, error) {
-	return getAsSlice[int64](name, r, r.DataConverter.DeserializeInt64Tensor)
+	return getAsSlice[int64](name, r, converter.DeserializeInt64Tensor)
 }
 
 func (r *InferResult) AsUint8Slice(name string) ([]uint8, error) {
-	return getAsSlice[uint8](name, r, r.DataConverter.DeserializeUint8Tensor)
+	return getAsSlice[uint8](name, r, converter.DeserializeUint8Tensor)
 }
 
 func (r *InferResult) AsUint16Slice(name string) ([]uint16, error) {
-	return getAsSlice[uint16](name, r, r.DataConverter.DeserializeUint16Tensor)
+	return getAsSlice[uint16](name, r, converter.DeserializeUint16Tensor)
 }
 
 func (r *InferResult) AsUint32Slice(name string) ([]uint32, error) {
-	return getAsSlice[uint32](name, r, r.DataConverter.DeserializeUint32Tensor)
+	return getAsSlice[uint32](name, r, converter.DeserializeUint32Tensor)
 }
 
 func (r *InferResult) AsUint64Slice(name string) ([]uint64, error) {
-	return getAsSlice[uint64](name, r, r.DataConverter.DeserializeUint64Tensor)
+	return getAsSlice[uint64](name, r, converter.DeserializeUint64Tensor)
 }
 
 func (r *InferResult) AsFloat16Slice(name string) ([]float64, error) {
-	return getAsSlice[float64](name, r, r.DataConverter.DeserializeFloat16Tensor)
+	return getAsSlice[float64](name, r, converter.DeserializeFloat16Tensor)
 }
 
 func (r *InferResult) AsFloat32Slice(name string) ([]float32, error) {
-	return getAsSlice[float32](name, r, r.DataConverter.DeserializeFloat32Tensor)
+	return getAsSlice[float32](name, r, converter.DeserializeFloat32Tensor)
 }
 
 func (r *InferResult) AsFloat64Slice(name string) ([]float64, error) {
-	return getAsSlice[float64](name, r, r.DataConverter.DeserializeFloat64Tensor)
+	return getAsSlice[float64](name, r, converter.DeserializeFloat64Tensor)
 }
 
 func (r *InferResult) AsBoolSlice(name string) ([]bool, error) {
-	return getAsSlice[bool](name, r, r.DataConverter.DeserializeBoolTensor)
+	return getAsSlice[bool](name, r, converter.DeserializeBoolTensor)
 }
 
 func (r *InferResult) AsByteSlice(name string) ([]string, error) {
-	return getAsSlice[string](name, r, r.DataConverter.DeserializeBytesTensor)
+	return getAsSlice[string](name, r, converter.DeserializeBytesTensor)
 }
 
 func getAsSlice[T any](name string, inferResult *InferResult, deserializer func(buffer []byte) ([]T, error)) ([]T, error) {

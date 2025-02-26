@@ -10,57 +10,16 @@ import (
 	"math"
 )
 
-// DataConverter defines methods for converting binary data to various numerical types,
-// deserializing tensors based on their data type, and reshaping arrays to a specified shape.
-type DataConverter interface {
-	// SerializeTensor serializes a tensor into a byte slice based on its datatype.
-	SerializeTensor(inputTensor any) ([]byte, error)
-	// FlattenData converts a multi-dimensional tensor into a 1D slice of interfaces.
-	FlattenData(inputTensor any) []any
-
-	// The following methods deserialize a byte slice into a slice of the specified type.
-	DeserializeInt8Tensor(dataBuffer []byte) ([]int8, error)
-	DeserializeInt16Tensor(dataBuffer []byte) ([]int16, error)
-	DeserializeInt32Tensor(dataBuffer []byte) ([]int32, error)
-	DeserializeInt64Tensor(dataBuffer []byte) ([]int64, error)
-	DeserializeUint8Tensor(dataBuffer []byte) ([]uint8, error)
-	DeserializeUint16Tensor(dataBuffer []byte) ([]uint16, error)
-	DeserializeUint32Tensor(dataBuffer []byte) ([]uint32, error)
-	DeserializeUint64Tensor(dataBuffer []byte) ([]uint64, error)
-	DeserializeFloat16Tensor(dataBuffer []byte) ([]float64, error)
-	DeserializeFloat32Tensor(dataBuffer []byte) ([]float32, error)
-	DeserializeFloat64Tensor(dataBuffer []byte) ([]float64, error)
-	DeserializeBoolTensor(dataBuffer []byte) ([]bool, error)
-	DeserializeBF16Tensor(encodedTensor []byte) ([]float32, error)
-	DeserializeBytesTensor(encodedTensor []byte) ([]string, error)
-
-	// The following methods convert a []any slice into a typed slice represented as []any.
-	ConvertInterfaceSliceToFloat32SliceAsInterface(data []any) []any
-	ConvertInterfaceSliceToFloat64SliceAsInterface(data []any) []any
-	ConvertInterfaceSliceToInt32SliceAsInterface(data []any) []any
-	ConvertInterfaceSliceToInt64SliceAsInterface(data []any) []any
-	ConvertInterfaceSliceToUint32SliceAsInterface(data []any) []any
-	ConvertInterfaceSliceToUint64SliceAsInterface(data []any) []any
-	ConvertInterfaceSliceToBoolSliceAsInterface(data []any) []any
-	ConvertInterfaceSliceToBytesSliceAsInterface(data []any) ([]any, error)
-}
-
-type dataConverter struct{}
-
-func NewDataConverter() DataConverter {
-	return &dataConverter{}
-}
-
-func (dc *dataConverter) SerializeTensor(inputTensor any) ([]byte, error) {
+func SerializeTensor(inputTensor any) ([]byte, error) {
 	var buffer bytes.Buffer
-	if err := dc.serializeTensorToWriter(inputTensor, &buffer); err != nil {
+	if err := serializeTensorToWriter(inputTensor, &buffer); err != nil {
 		return nil, err
 	}
 	return buffer.Bytes(), nil
 }
 
 // serializeTensorToWriter writes the tensor data into the provided io.Writer.
-func (dc *dataConverter) serializeTensorToWriter(inputTensor any, w io.Writer) error {
+func serializeTensorToWriter(inputTensor any, w io.Writer) error {
 	switch tensor := inputTensor.(type) {
 	case []int:
 		for _, v := range tensor {
@@ -141,7 +100,7 @@ func (dc *dataConverter) serializeTensorToWriter(inputTensor any, w io.Writer) e
 	return nil
 }
 
-func (dc *dataConverter) FlattenData(inputTensor any) []any {
+func FlattenData(inputTensor any) []any {
 	switch tensor := inputTensor.(type) {
 	case []int:
 		result := make([]any, len(tensor))
@@ -214,58 +173,58 @@ func (dc *dataConverter) FlattenData(inputTensor any) []any {
 	}
 }
 
-func (dc *dataConverter) DeserializeInt8Tensor(dataBuffer []byte) ([]int8, error) {
+func DeserializeInt8Tensor(dataBuffer []byte) ([]int8, error) {
 	return deserializeTensorGeneric(dataBuffer, 1, func(b []byte) int8 { return int8(b[0]) }), nil
 }
 
-func (dc *dataConverter) DeserializeInt16Tensor(dataBuffer []byte) ([]int16, error) {
+func DeserializeInt16Tensor(dataBuffer []byte) ([]int16, error) {
 	return deserializeTensorGeneric(dataBuffer, 2, func(b []byte) int16 {
 		return int16(binary.LittleEndian.Uint16(b))
 	}), nil
 }
 
-func (dc *dataConverter) DeserializeInt32Tensor(dataBuffer []byte) ([]int32, error) {
+func DeserializeInt32Tensor(dataBuffer []byte) ([]int32, error) {
 	return deserializeTensorGeneric(dataBuffer, 4, func(b []byte) int32 {
 		return int32(binary.LittleEndian.Uint32(b))
 	}), nil
 }
 
-func (dc *dataConverter) DeserializeInt64Tensor(dataBuffer []byte) ([]int64, error) {
+func DeserializeInt64Tensor(dataBuffer []byte) ([]int64, error) {
 	return deserializeTensorGeneric(dataBuffer, 8, func(b []byte) int64 {
 		return int64(binary.LittleEndian.Uint64(b))
 	}), nil
 }
 
-func (dc *dataConverter) DeserializeUint8Tensor(dataBuffer []byte) ([]uint8, error) {
+func DeserializeUint8Tensor(dataBuffer []byte) ([]uint8, error) {
 	// []byte is already []uint8.
 	return dataBuffer, nil
 }
 
-func (dc *dataConverter) DeserializeUint16Tensor(dataBuffer []byte) ([]uint16, error) {
+func DeserializeUint16Tensor(dataBuffer []byte) ([]uint16, error) {
 	return deserializeTensorGeneric(dataBuffer, 2, func(b []byte) uint16 {
 		return binary.LittleEndian.Uint16(b)
 	}), nil
 }
 
-func (dc *dataConverter) DeserializeUint32Tensor(dataBuffer []byte) ([]uint32, error) {
+func DeserializeUint32Tensor(dataBuffer []byte) ([]uint32, error) {
 	return deserializeTensorGeneric(dataBuffer, 4, func(b []byte) uint32 {
 		return binary.LittleEndian.Uint32(b)
 	}), nil
 }
 
-func (dc *dataConverter) DeserializeUint64Tensor(dataBuffer []byte) ([]uint64, error) {
+func DeserializeUint64Tensor(dataBuffer []byte) ([]uint64, error) {
 	return deserializeTensorGeneric(dataBuffer, 8, func(b []byte) uint64 {
 		return binary.LittleEndian.Uint64(b)
 	}), nil
 }
 
-func (dc *dataConverter) DeserializeBoolTensor(dataBuffer []byte) ([]bool, error) {
+func DeserializeBoolTensor(dataBuffer []byte) ([]bool, error) {
 	return deserializeTensorGeneric(dataBuffer, 1, func(b []byte) bool {
 		return b[0] != 0
 	}), nil
 }
 
-func (dc *dataConverter) DeserializeFloat16Tensor(dataBuffer []byte) ([]float64, error) {
+func DeserializeFloat16Tensor(dataBuffer []byte) ([]float64, error) {
 	return deserializeTensorGeneric(dataBuffer, 2, func(b []byte) float64 {
 		uint16Value := binary.LittleEndian.Uint16(b)
 		float16Value := float16.Frombits(uint16Value)
@@ -273,19 +232,19 @@ func (dc *dataConverter) DeserializeFloat16Tensor(dataBuffer []byte) ([]float64,
 	}), nil
 }
 
-func (dc *dataConverter) DeserializeFloat32Tensor(dataBuffer []byte) ([]float32, error) {
+func DeserializeFloat32Tensor(dataBuffer []byte) ([]float32, error) {
 	return deserializeTensorGeneric(dataBuffer, 4, func(b []byte) float32 {
 		return math.Float32frombits(binary.LittleEndian.Uint32(b))
 	}), nil
 }
 
-func (dc *dataConverter) DeserializeFloat64Tensor(dataBuffer []byte) ([]float64, error) {
+func DeserializeFloat64Tensor(dataBuffer []byte) ([]float64, error) {
 	return deserializeTensorGeneric(dataBuffer, 8, func(b []byte) float64 {
 		return math.Float64frombits(binary.LittleEndian.Uint64(b))
 	}), nil
 }
 
-func (dc *dataConverter) DeserializeBF16Tensor(encodedTensor []byte) ([]float32, error) {
+func DeserializeBF16Tensor(encodedTensor []byte) ([]float32, error) {
 	return deserializeTensorGeneric(encodedTensor, 2, func(b []byte) float32 {
 		bits := binary.LittleEndian.Uint16(b)
 		float32Bits := uint32(bits) << 16
@@ -293,7 +252,7 @@ func (dc *dataConverter) DeserializeBF16Tensor(encodedTensor []byte) ([]float32,
 	}), nil
 }
 
-func (dc *dataConverter) DeserializeBytesTensor(encodedTensor []byte) ([]string, error) {
+func DeserializeBytesTensor(encodedTensor []byte) ([]string, error) {
 	var strs []string
 	offset := 0
 	for offset < len(encodedTensor) {
@@ -323,35 +282,35 @@ func deserializeTensorGeneric[T any](dataBuffer []byte, blockSize int, convert f
 	return result
 }
 
-func (dc *dataConverter) ConvertInterfaceSliceToFloat32SliceAsInterface(data []any) []any {
+func ConvertInterfaceSliceToFloat32SliceAsInterface(data []any) []any {
 	return convertInterfaceSlice(data, func(v any) any { return float32(v.(float64)) })
 }
 
-func (dc *dataConverter) ConvertInterfaceSliceToFloat64SliceAsInterface(data []any) []any {
+func ConvertInterfaceSliceToFloat64SliceAsInterface(data []any) []any {
 	return convertInterfaceSlice(data, func(v any) any { return v.(float64) })
 }
 
-func (dc *dataConverter) ConvertInterfaceSliceToInt32SliceAsInterface(data []any) []any {
+func ConvertInterfaceSliceToInt32SliceAsInterface(data []any) []any {
 	return convertInterfaceSlice(data, func(v any) any { return int32(v.(float64)) })
 }
 
-func (dc *dataConverter) ConvertInterfaceSliceToInt64SliceAsInterface(data []any) []any {
+func ConvertInterfaceSliceToInt64SliceAsInterface(data []any) []any {
 	return convertInterfaceSlice(data, func(v any) any { return int64(v.(float64)) })
 }
 
-func (dc *dataConverter) ConvertInterfaceSliceToUint32SliceAsInterface(data []any) []any {
+func ConvertInterfaceSliceToUint32SliceAsInterface(data []any) []any {
 	return convertInterfaceSlice(data, func(v any) any { return uint32(v.(float64)) })
 }
 
-func (dc *dataConverter) ConvertInterfaceSliceToUint64SliceAsInterface(data []any) []any {
+func ConvertInterfaceSliceToUint64SliceAsInterface(data []any) []any {
 	return convertInterfaceSlice(data, func(v any) any { return uint64(v.(float64)) })
 }
 
-func (dc *dataConverter) ConvertInterfaceSliceToBoolSliceAsInterface(data []any) []any {
+func ConvertInterfaceSliceToBoolSliceAsInterface(data []any) []any {
 	return convertInterfaceSlice(data, func(v any) any { return v.(bool) })
 }
 
-func (dc *dataConverter) ConvertInterfaceSliceToBytesSliceAsInterface(data []any) ([]any, error) {
+func ConvertInterfaceSliceToBytesSliceAsInterface(data []any) ([]any, error) {
 	convertedData := make([]any, len(data))
 	for i, v := range data {
 		str, ok := v.(string)

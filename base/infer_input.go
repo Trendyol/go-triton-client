@@ -34,13 +34,12 @@ type InferInput interface {
 
 // BaseInferInput is a base struct that implements common functionality for InferInput.
 type BaseInferInput struct {
-	Name          string
-	Shape         []int64
-	Datatype      string
-	Parameters    map[string]any
-	Data          []any
-	RawData       []byte
-	DataConverter converter.DataConverter
+	Name       string
+	Shape      []int64
+	Datatype   string
+	Parameters map[string]any
+	Data       []any
+	RawData    []byte
 }
 
 func (input *BaseInferInput) GetName() string {
@@ -85,11 +84,11 @@ func (input *BaseInferInput) SetData(inputTensor any, binaryData bool) error {
 		// For non-binary data, remove binary data size parameter and set Data
 		delete(input.Parameters, "binary_data_size")
 		input.RawData = nil
-		input.Data = input.DataConverter.FlattenData(inputTensor)
+		input.Data = converter.FlattenData(inputTensor)
 	} else {
 		// For binary data, serialize the tensor and set RawData
 		input.Data = nil
-		rawData, err := input.DataConverter.SerializeTensor(inputTensor)
+		rawData, err := converter.SerializeTensor(inputTensor)
 		if err != nil {
 			return err
 		}

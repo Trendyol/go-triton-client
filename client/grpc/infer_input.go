@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"github.com/Trendyol/go-triton-client/base"
 	"github.com/Trendyol/go-triton-client/client/grpc/grpc_generated_v2"
-	"github.com/Trendyol/go-triton-client/converter"
 	"log"
 )
 
@@ -20,11 +19,10 @@ func NewInferInput(name string, datatype string, shape []int64, parameters map[s
 	}
 	return &InferInput{
 		BaseInferInput: &base.BaseInferInput{
-			Name:          name,
-			Shape:         shape,
-			Datatype:      datatype,
-			Parameters:    parameters,
-			DataConverter: converter.NewDataConverter(),
+			Name:       name,
+			Shape:      shape,
+			Datatype:   datatype,
+			Parameters: parameters,
 		},
 	}
 }

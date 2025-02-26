@@ -1,7 +1,6 @@
 .PHONY: generate-mocks
 
 generate-mocks:
-	mockgen -source=converter/data_converter.go -destination=mocks/mock_data_converter.go -package=mocks
 	mockgen -source=base/grpc_client.go -destination=mocks/mock_grpc_client.go -package=mocks
 	mockgen -source=base/http_client.go -destination=mocks/mock_http_client.go -package=mocks
 	mockgen -source=client/grpc/grpc_generated_v2/grpc_service.pb.go -destination=mocks/mock_grpc_service.go -package=mocks

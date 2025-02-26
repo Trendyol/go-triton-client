@@ -102,15 +102,8 @@ func serializeStrings(data []string) []byte {
 	return buf.Bytes()
 }
 
-func TestNewDataConverter(t *testing.T) {
-	dc := NewDataConverter()
-	if dc == nil {
-		t.Errorf("Expected DataConverter instance, got nil")
-	}
-}
-
 func TestSerializeTensor(t *testing.T) {
-	dc := NewDataConverter()
+
 	testCases := []struct {
 		input     any
 		expected  []byte
@@ -130,7 +123,7 @@ func TestSerializeTensor(t *testing.T) {
 		{[]struct{}{}, nil, true},
 	}
 	for _, tc := range testCases {
-		result, err := dc.SerializeTensor(tc.input)
+		result, err := SerializeTensor(tc.input)
 		if (err != nil) != tc.expectErr {
 			t.Errorf("SerializeTensor(%v) unexpected error status: %v", tc.input, err)
 		}
@@ -141,7 +134,6 @@ func TestSerializeTensor(t *testing.T) {
 }
 
 func TestSerializeTensor_Error(t *testing.T) {
-	dc := &dataConverter{}
 
 	testCases := []struct {
 		description string
@@ -184,7 +176,7 @@ func TestSerializeTensor_Error(t *testing.T) {
 
 	for _, tc := range testCases {
 		t.Run(tc.description, func(t *testing.T) {
-			result, err := dc.SerializeTensor(tc.input)
+			result, err := SerializeTensor(tc.input)
 			if tc.expectError {
 				if err == nil || err.Error() != tc.errorMsg {
 					t.Errorf("Expected error '%v', got '%v'", tc.errorMsg, err)
@@ -202,7 +194,7 @@ func TestSerializeTensor_Error(t *testing.T) {
 
 	t.Run("Simulate write error int", func(t *testing.T) {
 		faultyWriter := &FaultyWriter{failOnWrite: true}
-		err := dc.serializeTensorToWriter([]int{1, 2, 3}, faultyWriter)
+		err := serializeTensorToWriter([]int{1, 2, 3}, faultyWriter)
 		if err == nil || err.Error() != "write error" {
 			t.Errorf("Expected 'write error', got '%v'", err)
 		}
@@ -210,7 +202,7 @@ func TestSerializeTensor_Error(t *testing.T) {
 
 	t.Run("Simulate write error int32", func(t *testing.T) {
 		faultyWriter := &FaultyWriter{failOnWrite: true}
-		err := dc.serializeTensorToWriter([]int32{1, 2, 3}, faultyWriter)
+		err := serializeTensorToWriter([]int32{1, 2, 3}, faultyWriter)
 		if err == nil || err.Error() != "write error" {
 			t.Errorf("Expected 'write error', got '%v'", err)
 		}
@@ -218,7 +210,7 @@ func TestSerializeTensor_Error(t *testing.T) {
 
 	t.Run("Simulate write error int64", func(t *testing.T) {
 		faultyWriter := &FaultyWriter{failOnWrite: true}
-		err := dc.serializeTensorToWriter([]int64{1, 2, 3}, faultyWriter)
+		err := serializeTensorToWriter([]int64{1, 2, 3}, faultyWriter)
 		if err == nil || err.Error() != "write error" {
 			t.Errorf("Expected 'write error', got '%v'", err)
 		}
@@ -226,7 +218,7 @@ func TestSerializeTensor_Error(t *testing.T) {
 
 	t.Run("Simulate write error uint16", func(t *testing.T) {
 		faultyWriter := &FaultyWriter{failOnWrite: true}
-		err := dc.serializeTensorToWriter([]uint16{1, 2, 3}, faultyWriter)
+		err := serializeTensorToWriter([]uint16{1, 2, 3}, faultyWriter)
 		if err == nil || err.Error() != "write error" {
 			t.Errorf("Expected 'write error', got '%v'", err)
 		}
@@ -234,7 +226,7 @@ func TestSerializeTensor_Error(t *testing.T) {
 
 	t.Run("Simulate write error uint32", func(t *testing.T) {
 		faultyWriter := &FaultyWriter{failOnWrite: true}
-		err := dc.serializeTensorToWriter([]uint32{1, 2, 3}, faultyWriter)
+		err := serializeTensorToWriter([]uint32{1, 2, 3}, faultyWriter)
 		if err == nil || err.Error() != "write error" {
 			t.Errorf("Expected 'write error', got '%v'", err)
 		}
@@ -242,7 +234,7 @@ func TestSerializeTensor_Error(t *testing.T) {
 
 	t.Run("Simulate write error uint64", func(t *testing.T) {
 		faultyWriter := &FaultyWriter{failOnWrite: true}
-		err := dc.serializeTensorToWriter([]uint64{1, 2, 3}, faultyWriter)
+		err := serializeTensorToWriter([]uint64{1, 2, 3}, faultyWriter)
 		if err == nil || err.Error() != "write error" {
 			t.Errorf("Expected 'write error', got '%v'", err)
 		}
@@ -250,7 +242,7 @@ func TestSerializeTensor_Error(t *testing.T) {
 
 	t.Run("Simulate write error float32", func(t *testing.T) {
 		faultyWriter := &FaultyWriter{failOnWrite: true}
-		err := dc.serializeTensorToWriter([]float32{1, 2, 3}, faultyWriter)
+		err := serializeTensorToWriter([]float32{1, 2, 3}, faultyWriter)
 		if err == nil || err.Error() != "write error" {
 			t.Errorf("Expected 'write error', got '%v'", err)
 		}
@@ -258,7 +250,7 @@ func TestSerializeTensor_Error(t *testing.T) {
 
 	t.Run("Simulate write error float64", func(t *testing.T) {
 		faultyWriter := &FaultyWriter{failOnWrite: true}
-		err := dc.serializeTensorToWriter([]float64{1, 2, 3}, faultyWriter)
+		err := serializeTensorToWriter([]float64{1, 2, 3}, faultyWriter)
 		if err == nil || err.Error() != "write error" {
 			t.Errorf("Expected 'write error', got '%v'", err)
 		}
@@ -266,7 +258,7 @@ func TestSerializeTensor_Error(t *testing.T) {
 
 	t.Run("Simulate write error bool", func(t *testing.T) {
 		faultyWriter := &FaultyWriter{failOnWrite: true}
-		err := dc.serializeTensorToWriter([]bool{true, false}, faultyWriter)
+		err := serializeTensorToWriter([]bool{true, false}, faultyWriter)
 		if err == nil || err.Error() != "write error" {
 			t.Errorf("Expected 'write error', got '%v'", err)
 		}
@@ -274,7 +266,7 @@ func TestSerializeTensor_Error(t *testing.T) {
 
 	t.Run("Simulate write error byte", func(t *testing.T) {
 		faultyWriter := &FaultyWriter{failOnWrite: true}
-		err := dc.serializeTensorToWriter([]byte{1, 4, 5}, faultyWriter)
+		err := serializeTensorToWriter([]byte{1, 4, 5}, faultyWriter)
 		if err == nil || err.Error() != "write error" {
 			t.Errorf("Expected 'write error', got '%v'", err)
 		}
@@ -282,7 +274,7 @@ func TestSerializeTensor_Error(t *testing.T) {
 
 	t.Run("Simulate write error string", func(t *testing.T) {
 		faultyWriter := &FaultyWriter{failOnWrite: true}
-		err := dc.serializeTensorToWriter([]string{"test1", "test2"}, faultyWriter)
+		err := serializeTensorToWriter([]string{"test1", "test2"}, faultyWriter)
 		if err == nil || err.Error() != "write error" {
 			t.Errorf("Expected 'write error', got '%v'", err)
 		}
@@ -298,7 +290,7 @@ func TestSerializeTensor_Error(t *testing.T) {
 			failOnData:       []byte(str),
 		}
 
-		err := dc.serializeTensorToWriter(tensor, failingWriter)
+		err := serializeTensorToWriter(tensor, failingWriter)
 		if err == nil || err.Error() != "write error" {
 			t.Errorf("Expected 'write error', got '%v'", err)
 		}
@@ -306,7 +298,7 @@ func TestSerializeTensor_Error(t *testing.T) {
 }
 
 func TestFlattenData(t *testing.T) {
-	dc := NewDataConverter()
+
 	testCases := []struct {
 		input    any
 		expected []any
@@ -325,7 +317,7 @@ func TestFlattenData(t *testing.T) {
 		{[]struct{}{}, nil},
 	}
 	for _, tc := range testCases {
-		result := dc.FlattenData(tc.input)
+		result := FlattenData(tc.input)
 		if !reflect.DeepEqual(result, tc.expected) {
 			t.Errorf("FlattenData(%v) = %v; want %v", tc.input, result, tc.expected)
 		}
@@ -333,10 +325,10 @@ func TestFlattenData(t *testing.T) {
 }
 
 func TestDeserializeInt8Tensor(t *testing.T) {
-	dc := NewDataConverter()
+
 	data := []byte{1, 2, 3, 4, 5, 6, 7, 8}
 	expected := []int8{1, 2, 3, 4, 5, 6, 7, 8}
-	result, err := dc.DeserializeInt8Tensor(data)
+	result, err := DeserializeInt8Tensor(data)
 	if !reflect.DeepEqual(result, expected) {
 		t.Errorf("DeserializeInt8Tensor(%v) = %v; want %v", data, result, expected)
 	}
@@ -346,10 +338,10 @@ func TestDeserializeInt8Tensor(t *testing.T) {
 }
 
 func TestDeserializeInt16Tensor(t *testing.T) {
-	dc := NewDataConverter()
+
 	data := []byte{1, 1}
 	expected := []int16{257}
-	result, err := dc.DeserializeInt16Tensor(data)
+	result, err := DeserializeInt16Tensor(data)
 	if !reflect.DeepEqual(result, expected) {
 		t.Errorf("DeserializeInt16Tensor(%v) = %v; want %v", data, result, expected)
 	}
@@ -359,10 +351,10 @@ func TestDeserializeInt16Tensor(t *testing.T) {
 }
 
 func TestDeserializeInt32Tensor(t *testing.T) {
-	dc := NewDataConverter()
+
 	data := []byte{1, 1, 0, 0}
 	expected := []int32{257}
-	result, err := dc.DeserializeInt32Tensor(data)
+	result, err := DeserializeInt32Tensor(data)
 	if !reflect.DeepEqual(result, expected) {
 		t.Errorf("DeserializeInt32Tensor(%v) = %v; want %v", data, result, expected)
 	}
@@ -372,10 +364,10 @@ func TestDeserializeInt32Tensor(t *testing.T) {
 }
 
 func TestDeserializeInt64Tensor(t *testing.T) {
-	dc := NewDataConverter()
+
 	data := []byte{1, 1, 0, 0, 0, 0, 0, 0}
 	expected := []int64{257}
-	result, err := dc.DeserializeInt64Tensor(data)
+	result, err := DeserializeInt64Tensor(data)
 	if !reflect.DeepEqual(result, expected) {
 		t.Errorf("DeserializeInt64Tensor(%v) = %v; want %v", data, result, expected)
 	}
@@ -385,10 +377,10 @@ func TestDeserializeInt64Tensor(t *testing.T) {
 }
 
 func TestDeserializeUint8Tensor(t *testing.T) {
-	dc := NewDataConverter()
+
 	data := []byte{1, 2, 3, 4, 5, 6, 7, 8}
 	expected := []uint8{1, 2, 3, 4, 5, 6, 7, 8}
-	result, err := dc.DeserializeUint8Tensor(data)
+	result, err := DeserializeUint8Tensor(data)
 	if !reflect.DeepEqual(result, expected) {
 		t.Errorf("DeserializeUint8Tensor(%v) = %v; want %v", data, result, expected)
 	}
@@ -398,10 +390,10 @@ func TestDeserializeUint8Tensor(t *testing.T) {
 }
 
 func TestDeserializeUint16Tensor(t *testing.T) {
-	dc := NewDataConverter()
+
 	data := []byte{1, 1}
 	expected := []uint16{257}
-	result, err := dc.DeserializeUint16Tensor(data)
+	result, err := DeserializeUint16Tensor(data)
 	if !reflect.DeepEqual(result, expected) {
 		t.Errorf("DeserializeUint16Tensor(%v) = %v; want %v", data, result, expected)
 	}
@@ -411,10 +403,10 @@ func TestDeserializeUint16Tensor(t *testing.T) {
 }
 
 func TestDeserializeUint32Tensor(t *testing.T) {
-	dc := NewDataConverter()
+
 	data := []byte{1, 1, 0, 0}
 	expected := []uint32{257}
-	result, err := dc.DeserializeUint32Tensor(data)
+	result, err := DeserializeUint32Tensor(data)
 	if !reflect.DeepEqual(result, expected) {
 		t.Errorf("DeserializeUint32Tensor(%v) = %v; want %v", data, result, expected)
 	}
@@ -424,10 +416,10 @@ func TestDeserializeUint32Tensor(t *testing.T) {
 }
 
 func TestDeserializeUint64Tensor(t *testing.T) {
-	dc := NewDataConverter()
+
 	data := []byte{1, 1, 0, 0, 0, 0, 0, 0}
 	expected := []uint64{257}
-	result, err := dc.DeserializeUint64Tensor(data)
+	result, err := DeserializeUint64Tensor(data)
 	if !reflect.DeepEqual(result, expected) {
 		t.Errorf("DeserializeUint64Tensor(%v) = %v; want %v", data, result, expected)
 	}
@@ -437,10 +429,10 @@ func TestDeserializeUint64Tensor(t *testing.T) {
 }
 
 func TestDeserializeFloat16Tensor(t *testing.T) {
-	dc := NewDataConverter()
+
 	data := []byte{141, 122}
 	expected := []float64{53664}
-	result, err := dc.DeserializeFloat16Tensor(data)
+	result, err := DeserializeFloat16Tensor(data)
 	if !reflect.DeepEqual(result, expected) {
 		t.Errorf("DeserializeFloat16Tensor(%v) = %v; want %v", data, result, expected)
 	}
@@ -450,11 +442,11 @@ func TestDeserializeFloat16Tensor(t *testing.T) {
 }
 
 func TestDeserializeFloat32Tensor(t *testing.T) {
-	dc := NewDataConverter()
+
 	data := make([]byte, 4)
 	binary.LittleEndian.PutUint32(data, math.Float32bits(257.0))
 	expected := []float32{257}
-	result, err := dc.DeserializeFloat32Tensor(data)
+	result, err := DeserializeFloat32Tensor(data)
 	if !reflect.DeepEqual(result, expected) {
 		t.Errorf("DeserializeFloat32Tensor(%v) = %v; want %v", data, result, expected)
 	}
@@ -464,11 +456,11 @@ func TestDeserializeFloat32Tensor(t *testing.T) {
 }
 
 func TestDeserializeBF16Tensor(t *testing.T) {
-	dc := NewDataConverter()
+
 	data := make([]byte, 4)
 	binary.LittleEndian.PutUint32(data, math.Float32bits(256.0))
 	expected := []float32{0, 256}
-	result, err := dc.DeserializeBF16Tensor(data)
+	result, err := DeserializeBF16Tensor(data)
 	if !reflect.DeepEqual(result, expected) {
 		t.Errorf("DeserializeFloat32Tensor(%v) = %v; want %v", data, result, expected)
 	}
@@ -478,11 +470,11 @@ func TestDeserializeBF16Tensor(t *testing.T) {
 }
 
 func TestDeserializeFloat64Tensor(t *testing.T) {
-	dc := NewDataConverter()
+
 	data := make([]byte, 8)
 	binary.LittleEndian.PutUint64(data, math.Float64bits(257.0))
 	expected := []float64{257}
-	result, err := dc.DeserializeFloat64Tensor(data)
+	result, err := DeserializeFloat64Tensor(data)
 	if !reflect.DeepEqual(result, expected) {
 		t.Errorf("DeserializeFloat64Tensor(%v) = %v; want %v", data, result, expected)
 	}
@@ -492,10 +484,10 @@ func TestDeserializeFloat64Tensor(t *testing.T) {
 }
 
 func TestDeserializeBoolTensor(t *testing.T) {
-	dc := NewDataConverter()
+
 	data := []byte{1}
 	expected := []bool{true}
-	result, err := dc.DeserializeBoolTensor(data)
+	result, err := DeserializeBoolTensor(data)
 	if !reflect.DeepEqual(result, expected) {
 		t.Errorf("DeserializeBoolTensor(%v) = %v; want %v", data, result, expected)
 	}
@@ -505,9 +497,9 @@ func TestDeserializeBoolTensor(t *testing.T) {
 }
 
 func TestDeserializeBytesTensor(t *testing.T) {
-	dc := dataConverter{}
+
 	data := serializeStrings([]string{"hello", "world"})
-	result, err := dc.DeserializeBytesTensor(data)
+	result, err := DeserializeBytesTensor(data)
 	expected := []string{"hello", "world"}
 	if err != nil {
 		t.Errorf("deserializeBytesTensor(%v) unexpected error: %v", data, err)
@@ -516,33 +508,32 @@ func TestDeserializeBytesTensor(t *testing.T) {
 		t.Errorf("deserializeBytesTensor(%v) = %v; want %v", data, result, expected)
 	}
 	data = []byte{0x05, 0x00, 0x00}
-	_, err = dc.DeserializeBytesTensor(data)
+	_, err = DeserializeBytesTensor(data)
 	if err == nil {
 		t.Errorf("Expected error for malformed data")
 	}
 }
 
 func TestDeserializeBytesTensor_UnexpectedEnd(t *testing.T) {
-	dc := &dataConverter{}
 
 	length := uint32(5)
 	buf := make([]byte, 4)
 	binary.LittleEndian.PutUint32(buf, length)
 	buf = append(buf, []byte("abc")...)
 
-	_, err := dc.DeserializeBytesTensor(buf)
+	_, err := DeserializeBytesTensor(buf)
 	if err == nil || err.Error() != "unexpected end of encoded tensor" {
 		t.Errorf("Expected 'unexpected end of encoded tensor', got '%v'", err)
 	}
 }
 
 func TestConvertByteSliceToInt64Slice(t *testing.T) {
-	dc := NewDataConverter()
+
 	data := make([]byte, 16)
 	binary.LittleEndian.PutUint64(data[0:], uint64(1))
 	binary.LittleEndian.PutUint64(data[8:], uint64(2))
 	expected := []int64{1, 2}
-	result, err := dc.DeserializeInt64Tensor(data)
+	result, err := DeserializeInt64Tensor(data)
 	if !reflect.DeepEqual(result, expected) {
 		t.Errorf("ConvertByteSliceToInt64Slice(%v) = %v; want %v", data, result, expected)
 	}
@@ -552,12 +543,12 @@ func TestConvertByteSliceToInt64Slice(t *testing.T) {
 }
 
 func TestConvertByteSliceToFloat32Slice(t *testing.T) {
-	dc := NewDataConverter()
+
 	data := make([]byte, 8)
 	binary.LittleEndian.PutUint32(data[0:], math.Float32bits(1.0))
 	binary.LittleEndian.PutUint32(data[4:], math.Float32bits(2.0))
 	expected := []float32{1.0, 2.0}
-	result, err := dc.DeserializeFloat32Tensor(data)
+	result, err := DeserializeFloat32Tensor(data)
 	if !reflect.DeepEqual(result, expected) {
 		t.Errorf("ConvertByteSliceToFloat32Slice(%v) = %v; want %v", data, result, expected)
 	}
@@ -567,12 +558,12 @@ func TestConvertByteSliceToFloat32Slice(t *testing.T) {
 }
 
 func TestConvertByteSliceToFloat64Slice(t *testing.T) {
-	dc := NewDataConverter()
+
 	data := make([]byte, 16)
 	binary.LittleEndian.PutUint64(data[0:], math.Float64bits(1.0))
 	binary.LittleEndian.PutUint64(data[8:], math.Float64bits(2.0))
 	expected := []float64{1.0, 2.0}
-	result, err := dc.DeserializeFloat64Tensor(data)
+	result, err := DeserializeFloat64Tensor(data)
 	if !reflect.DeepEqual(result, expected) {
 		t.Errorf("ConvertByteSliceToFloat64Slice(%v) = %v; want %v", data, result, expected)
 	}
@@ -582,80 +573,80 @@ func TestConvertByteSliceToFloat64Slice(t *testing.T) {
 }
 
 func TestConvertInterfaceSliceToFloat32SliceAsInterface(t *testing.T) {
-	dc := NewDataConverter()
+
 	data := []any{float64(1.0), float64(2.0)}
 	expected := []any{float32(1.0), float32(2.0)}
-	result := dc.ConvertInterfaceSliceToFloat32SliceAsInterface(data)
+	result := ConvertInterfaceSliceToFloat32SliceAsInterface(data)
 	if !reflect.DeepEqual(result, expected) {
 		t.Errorf("ConvertInterfaceSliceToFloat32SliceAsInterface(%v) = %v; want %v", data, result, expected)
 	}
 }
 
 func TestConvertInterfaceSliceToFloat64SliceAsInterface(t *testing.T) {
-	dc := NewDataConverter()
+
 	data := []any{float64(1.0), float64(2.0)}
 	expected := []any{float64(1.0), float64(2.0)}
-	result := dc.ConvertInterfaceSliceToFloat64SliceAsInterface(data)
+	result := ConvertInterfaceSliceToFloat64SliceAsInterface(data)
 	if !reflect.DeepEqual(result, expected) {
 		t.Errorf("ConvertInterfaceSliceToFloat64SliceAsInterface(%v) = %v; want %v", data, result, expected)
 	}
 }
 
 func TestConvertInterfaceSliceToInt32SliceAsInterface(t *testing.T) {
-	dc := NewDataConverter()
+
 	data := []any{float64(1), float64(2)}
 	expected := []any{int32(1), int32(2)}
-	result := dc.ConvertInterfaceSliceToInt32SliceAsInterface(data)
+	result := ConvertInterfaceSliceToInt32SliceAsInterface(data)
 	if !reflect.DeepEqual(result, expected) {
 		t.Errorf("ConvertInterfaceSliceToInt32SliceAsInterface(%v) = %v; want %v", data, result, expected)
 	}
 }
 
 func TestConvertInterfaceSliceToInt64SliceAsInterface(t *testing.T) {
-	dc := NewDataConverter()
+
 	data := []any{float64(1), float64(2)}
 	expected := []any{int64(1), int64(2)}
-	result := dc.ConvertInterfaceSliceToInt64SliceAsInterface(data)
+	result := ConvertInterfaceSliceToInt64SliceAsInterface(data)
 	if !reflect.DeepEqual(result, expected) {
 		t.Errorf("ConvertInterfaceSliceToInt64SliceAsInterface(%v) = %v; want %v", data, result, expected)
 	}
 }
 
 func TestConvertInterfaceSliceToUint32SliceAsInterface(t *testing.T) {
-	dc := NewDataConverter()
+
 	data := []any{float64(1), float64(2)}
 	expected := []any{uint32(1), uint32(2)}
-	result := dc.ConvertInterfaceSliceToUint32SliceAsInterface(data)
+	result := ConvertInterfaceSliceToUint32SliceAsInterface(data)
 	if !reflect.DeepEqual(result, expected) {
 		t.Errorf("ConvertInterfaceSliceToUint32SliceAsInterface(%v) = %v; want %v", data, result, expected)
 	}
 }
 
 func TestConvertInterfaceSliceToUint64SliceAsInterface(t *testing.T) {
-	dc := NewDataConverter()
+
 	data := []any{float64(1), float64(2)}
 	expected := []any{uint64(1), uint64(2)}
-	result := dc.ConvertInterfaceSliceToUint64SliceAsInterface(data)
+	result := ConvertInterfaceSliceToUint64SliceAsInterface(data)
 	if !reflect.DeepEqual(result, expected) {
 		t.Errorf("ConvertInterfaceSliceToUint64SliceAsInterface(%v) = %v; want %v", data, result, expected)
 	}
 }
 
 func TestConvertInterfaceSliceToBoolSliceAsInterface(t *testing.T) {
-	dc := NewDataConverter()
+
 	data := []any{true, false}
 	expected := []any{true, false}
-	result := dc.ConvertInterfaceSliceToBoolSliceAsInterface(data)
+	result := ConvertInterfaceSliceToBoolSliceAsInterface(data)
 	if !reflect.DeepEqual(result, expected) {
 		t.Errorf("ConvertInterfaceSliceToBoolSliceAsInterface(%v) = %v; want %v", data, result, expected)
 	}
 }
 
 func TestConvertInterfaceSliceToBytesSliceAsInterface(t *testing.T) {
-	dc := NewDataConverter()
+
 	data := []any{"hello", "world"}
 	expected := []any{[]byte("hello"), []byte("world")}
-	result, err := dc.ConvertInterfaceSliceToBytesSliceAsInterface(data)
+	result, err := ConvertInterfaceSliceToBytesSliceAsInterface(data)
 	if err != nil {
 		t.Errorf("ConvertInterfaceSliceToBytesSliceAsInterface(%v) unexpected error: %v", data, err)
 	}
@@ -663,7 +654,7 @@ func TestConvertInterfaceSliceToBytesSliceAsInterface(t *testing.T) {
 		t.Errorf("ConvertInterfaceSliceToBytesSliceAsInterface(%v) = %v; want %v", data, result, expected)
 	}
 	data = []any{"hello", 123}
-	_, err = dc.ConvertInterfaceSliceToBytesSliceAsInterface(data)
+	_, err = ConvertInterfaceSliceToBytesSliceAsInterface(data)
 	if err == nil {
 		t.Errorf("Expected error for non-string data")
 	}

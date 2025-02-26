@@ -1,9 +1,7 @@
 package base
 
 import (
-	"errors"
-	"github.com/Trendyol/go-triton-client/mocks"
-	"go.uber.org/mock/gomock"
+	"github.com/stretchr/testify/assert"
 	"reflect"
 	"testing"
 )
@@ -57,26 +55,23 @@ func TestBaseInferInput_GetRawData(t *testing.T) {
 func TestBaseInferInput_SetData(t *testing.T) {
 	inputTensor := []int32{1, 2, 3}
 	datatype := "INT32"
-	mockController := gomock.NewController(t)
-	defer mockController.Finish()
-	dataConverter := mocks.NewMockDataConverter(mockController)
-	dataConverter.EXPECT().SerializeTensor(gomock.Any()).Return([]uint8{1, 2, 3}, nil)
 	input := &BaseInferInput{
-		Datatype:      datatype,
-		Parameters:    map[string]any{"binary_data_size": 100},
-		DataConverter: dataConverter,
+		Datatype:   datatype,
+		Parameters: map[string]any{},
 	}
 	err := input.SetData(inputTensor, true)
 	if err != nil {
 		t.Fatalf("SetData returned error: %v", err)
 	}
-	if _, ok := input.Parameters["binary_data_size"]; !ok {
+	size, ok := input.Parameters["binary_data_size"]
+	if !ok {
 		t.Error("Expected 'binary_data_size' parameter to be not deleted")
 	}
+	assert.Equal(t, 3*4, size)
 	if input.Data != nil {
 		t.Errorf("Expected RawData to be nil, got %v", input.RawData)
 	}
-	expectedData := []uint8{1, 2, 3}
+	expectedData := []byte{1, 0, 0, 0, 2, 0, 0, 0, 3, 0, 0, 0}
 	if !reflect.DeepEqual(input.RawData, expectedData) {
 		t.Errorf("Expected Data %v, got %v", expectedData, input.Data)
 	}
@@ -85,14 +80,9 @@ func TestBaseInferInput_SetData(t *testing.T) {
 func TestBaseInferInput_SetData_NonBinaryData(t *testing.T) {
 	inputTensor := []int32{1, 2, 3}
 	datatype := "INT32"
-	mockController := gomock.NewController(t)
-	defer mockController.Finish()
-	dataConverter := mocks.NewMockDataConverter(mockController)
-	dataConverter.EXPECT().FlattenData(gomock.Any()).Return([]any{int32(1), int32(2), int32(3)})
 	input := &BaseInferInput{
-		Datatype:      datatype,
-		Parameters:    map[string]any{"binary_data_size": 100},
-		DataConverter: dataConverter,
+		Datatype:   datatype,
+		Parameters: map[string]any{"binary_data_size": 100},
 	}
 	err := input.SetData(inputTensor, false)
 	if err != nil {
@@ -110,66 +100,16 @@ func TestBaseInferInput_SetData_NonBinaryData(t *testing.T) {
 	}
 }
 
-func TestBaseInferInput_SetData_BinaryData(t *testing.T) {
-	inputTensor := []int32{1, 2, 3}
-	datatype := "INT32"
-	mockController := gomock.NewController(t)
-	defer mockController.Finish()
-	dataConverter := mocks.NewMockDataConverter(mockController)
-	dataConverter.EXPECT().SerializeTensor(gomock.Any()).Return([]byte{1, 2, 3, 4}, nil)
-	input := &BaseInferInput{
-		Datatype:      datatype,
-		Parameters:    make(map[string]any),
-		DataConverter: dataConverter,
-	}
-	err := input.SetData(inputTensor, true)
-	if err != nil {
-		t.Fatalf("SetData returned error: %v", err)
-	}
-	if input.Data != nil {
-		t.Errorf("Expected Data to be nil, got %v", input.Data)
-	}
-	expectedRawData := []byte{1, 2, 3, 4}
-	if !reflect.DeepEqual(input.RawData, expectedRawData) {
-		t.Errorf("Expected RawData %v, got %v", expectedRawData, input.RawData)
-	}
-	if size, ok := input.Parameters["binary_data_size"]; !ok || size != len(expectedRawData) {
-		t.Errorf("Expected binary_data_size %d, got %v", len(expectedRawData), size)
-	}
-}
-
 func TestBaseInferInput_SetData_InvalidDatatype(t *testing.T) {
 	inputTensor := []float32{1.0, 2.0, 3.0}
 	datatype := "INT32"
-	mockController := gomock.NewController(t)
-	defer mockController.Finish()
-	dataConverter := mocks.NewMockDataConverter(mockController)
 	input := &BaseInferInput{
-		Datatype:      datatype,
-		Parameters:    make(map[string]any),
-		DataConverter: dataConverter,
+		Datatype:   datatype,
+		Parameters: make(map[string]any),
 	}
 	err := input.SetData(inputTensor, false)
 	if err == nil {
 		t.Fatal("Expected error due to mismatched datatype, got nil")
-	}
-}
-
-func TestBaseInferInput_SetData_SerializeError(t *testing.T) {
-	inputTensor := []string{"a", "b", "c"}
-	datatype := "BYTES"
-	mockController := gomock.NewController(t)
-	defer mockController.Finish()
-	dataConverter := mocks.NewMockDataConverter(mockController)
-	dataConverter.EXPECT().SerializeTensor(gomock.Any()).Return(nil, errors.New("error while SerializeTensor"))
-	input := &BaseInferInput{
-		Datatype:      datatype,
-		Parameters:    make(map[string]any),
-		DataConverter: dataConverter,
-	}
-	err := input.SetData(inputTensor, true)
-	if err == nil {
-		t.Fatal("Expected error from SerializeTensor, got nil")
 	}
 }
 

@@ -3,7 +3,6 @@ package grpc
 import (
 	"github.com/Trendyol/go-triton-client/base"
 	"github.com/Trendyol/go-triton-client/client/grpc/grpc_generated_v2"
-	"github.com/Trendyol/go-triton-client/converter"
 	"github.com/Trendyol/go-triton-client/options"
 	"reflect"
 	"testing"
@@ -44,14 +43,12 @@ func TestNewRequestWrapper(t *testing.T) {
 		ResponseCompressionAlgorithm: responseCompressionAlgorithm,
 		Parameters:                   parameters,
 	}
-	dataConverter := converter.NewDataConverter()
 
 	wrapper := NewRequestWrapper(
 		modelName,
 		modelVersion,
 		inputs,
 		outputs,
-		dataConverter,
 		opts,
 	)
 
@@ -91,9 +88,6 @@ func TestNewRequestWrapper(t *testing.T) {
 	if wrapper.Options != opts {
 		t.Errorf("Expected Options %v, got %v", opts, wrapper.Options)
 	}
-	if wrapper.DataConverter != dataConverter {
-		t.Errorf("Expected DataConverter %v, got %v", dataConverter, wrapper.DataConverter)
-	}
 }
 
 func TestPrepareRequest_Success(t *testing.T) {
@@ -106,7 +100,6 @@ func TestPrepareRequest_Success(t *testing.T) {
 		"",
 		[]base.InferInput{input},
 		[]base.InferOutput{output},
-		converter.NewDataConverter(),
 		nil,
 	)
 
@@ -138,7 +131,6 @@ func TestPrepareRequest_Error(t *testing.T) {
 		"",
 		nil,
 		nil,
-		converter.NewDataConverter(),
 		&options.InferOptions{
 			Parameters: parameters,
 		},
@@ -160,7 +152,6 @@ func TestGetInferenceRequest_NoOutputs(t *testing.T) {
 		"",
 		[]base.InferInput{input},
 		nil,
-		converter.NewDataConverter(),
 		&options.InferOptions{
 			RequestID: &requestId,
 		},
@@ -185,7 +176,6 @@ func TestAddSequenceParameters(t *testing.T) {
 		"",
 		nil,
 		nil,
-		converter.NewDataConverter(),
 		&options.InferOptions{
 			SequenceID:    &sequenceID,
 			SequenceStart: &sequenceStart,
@@ -211,7 +201,6 @@ func TestAddSequenceParameters_NoSequenceID(t *testing.T) {
 		"",
 		nil,
 		nil,
-		converter.NewDataConverter(),
 		nil,
 	)
 	wrapper.addSequenceParameters(parameters)
@@ -235,7 +224,6 @@ func TestAddPriorityAndTimeout(t *testing.T) {
 		"",
 		nil,
 		nil,
-		converter.NewDataConverter(),
 		&options.InferOptions{
 			Priority: &priority,
 			Timeout:  &timeout,
@@ -257,7 +245,7 @@ func TestAddPriorityAndTimeout_Nil(t *testing.T) {
 		"",
 		nil,
 		nil,
-		converter.NewDataConverter(),
+
 		nil,
 	)
 	wrapper.addPriorityAndTimeout(parameters)
@@ -276,7 +264,7 @@ func TestAddCustomParameters_SupportedTypes(t *testing.T) {
 		"",
 		nil,
 		nil,
-		converter.NewDataConverter(),
+
 		&options.InferOptions{
 			Parameters: map[string]any{
 				"string_param": "value",
@@ -319,7 +307,6 @@ func TestAddCustomParameters_UnsupportedType(t *testing.T) {
 		"",
 		nil,
 		nil,
-		converter.NewDataConverter(),
 		&options.InferOptions{
 			Parameters: map[string]any{
 				"custom_param": []int{1, 2, 3},
@@ -341,7 +328,6 @@ func TestAddCustomParameters_ReservedKey(t *testing.T) {
 			"",
 			nil,
 			nil,
-			converter.NewDataConverter(),
 			&options.InferOptions{
 				Parameters: map[string]any{
 					key: 123,
@@ -364,7 +350,7 @@ func TestConvertInputsToTensors_WithBinaryData(t *testing.T) {
 		"",
 		[]base.InferInput{input},
 		nil,
-		converter.NewDataConverter(),
+
 		nil,
 	)
 	inputs, rawContents := wrapper.convertInputsToTensors()
@@ -383,7 +369,6 @@ func TestConvertInputsToTensors_NoBinaryData(t *testing.T) {
 		"",
 		[]base.InferInput{input},
 		nil,
-		converter.NewDataConverter(),
 		nil,
 	)
 	inputs, rawContents := wrapper.convertInputsToTensors()
@@ -402,7 +387,6 @@ func TestConvertOutputsToTensors(t *testing.T) {
 		"",
 		nil,
 		[]base.InferOutput{output},
-		converter.NewDataConverter(),
 		nil,
 	)
 	outputs := wrapper.convertOutputsToTensors()

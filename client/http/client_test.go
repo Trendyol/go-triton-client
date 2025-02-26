@@ -8,7 +8,6 @@ import (
 	"errors"
 	"fmt"
 	"github.com/Trendyol/go-triton-client/base"
-	"github.com/Trendyol/go-triton-client/converter"
 	"github.com/Trendyol/go-triton-client/marshaller"
 	"github.com/Trendyol/go-triton-client/mocks"
 	"github.com/Trendyol/go-triton-client/models"
@@ -496,12 +495,11 @@ func TestRegisterCUDASharedMemory(t *testing.T) {
 	}
 	mockHttpClient.EXPECT().Post(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).Return(mockResponse, nil)
 	c := &client{
-		baseURL:       "http://localhost",
-		httpClient:    mockHttpClient,
-		verbose:       true,
-		logger:        log.Default(),
-		dataConverter: converter.NewDataConverter(),
-		marshaller:    marshaller.NewJSONMarshaller(),
+		baseURL:    "http://localhost",
+		httpClient: mockHttpClient,
+		verbose:    true,
+		logger:     log.Default(),
+		marshaller: marshaller.NewJSONMarshaller(),
 	}
 	err := c.RegisterCUDASharedMemory(context.Background(), "cuda_region1", []byte("handle"), 0, 1024, &options.Options{})
 	if err != nil {
@@ -550,14 +548,12 @@ func TestInfer(t *testing.T) {
 		Body:       io.NopCloser(strings.NewReader(responseBody)),
 	}
 	mockHttpClient.EXPECT().Do(gomock.Any()).Return(mockResponse, nil)
-	dataConverter := converter.NewDataConverter()
 	c := &client{
-		baseURL:       "http://localhost",
-		httpClient:    mockHttpClient,
-		dataConverter: dataConverter,
-		verbose:       true,
-		logger:        log.Default(),
-		marshaller:    marshaller.NewJSONMarshaller(),
+		baseURL:    "http://localhost",
+		httpClient: mockHttpClient,
+		verbose:    true,
+		logger:     log.Default(),
+		marshaller: marshaller.NewJSONMarshaller(),
 	}
 	inputs := []base.InferInput{
 		NewInferInput("input", "FP32", []int64{1}, nil),
@@ -1071,10 +1067,9 @@ func TestInfer_NetworkError(t *testing.T) {
 	mockHttpClient := mocks.NewMockHttpClient(ctrl)
 	mockHttpClient.EXPECT().Do(gomock.Any()).Return(nil, errors.New("network error"))
 	c := &client{
-		baseURL:       "http://localhost",
-		httpClient:    mockHttpClient,
-		dataConverter: converter.NewDataConverter(),
-		marshaller:    marshaller.NewJSONMarshaller(),
+		baseURL:    "http://localhost",
+		httpClient: mockHttpClient,
+		marshaller: marshaller.NewJSONMarshaller(),
 	}
 	inputs := []base.InferInput{
 		NewInferInput("input", "FP32", []int64{1}, nil),
@@ -1096,10 +1091,9 @@ func TestInfer_NonOKStatus(t *testing.T) {
 	}
 	mockHttpClient.EXPECT().Do(gomock.Any()).Return(mockResponse, nil)
 	c := &client{
-		baseURL:       "http://localhost",
-		httpClient:    mockHttpClient,
-		dataConverter: converter.NewDataConverter(),
-		marshaller:    marshaller.NewJSONMarshaller(),
+		baseURL:    "http://localhost",
+		httpClient: mockHttpClient,
+		marshaller: marshaller.NewJSONMarshaller(),
 	}
 	inputs := []base.InferInput{
 		NewInferInput("input", "FP32", []int64{1}, nil),
@@ -1121,10 +1115,9 @@ func TestInfer_InvalidJSONResponse(t *testing.T) {
 	}
 	mockHttpClient.EXPECT().Do(gomock.Any()).Return(mockResponse, nil)
 	c := &client{
-		baseURL:       "http://localhost",
-		httpClient:    mockHttpClient,
-		dataConverter: converter.NewDataConverter(),
-		marshaller:    marshaller.NewJSONMarshaller(),
+		baseURL:    "http://localhost",
+		httpClient: mockHttpClient,
+		marshaller: marshaller.NewJSONMarshaller(),
 	}
 	inputs := []base.InferInput{
 		NewInferInput("input", "FP32", []int64{1}, nil),
@@ -1143,9 +1136,8 @@ func TestInfer_PrepareRequestError(t *testing.T) {
 	mockMarshaller.EXPECT().Marshal(gomock.Any()).Return(nil, errors.New("marshal error"))
 
 	c := &client{
-		baseURL:       "http://localhost",
-		dataConverter: converter.NewDataConverter(),
-		marshaller:    mockMarshaller,
+		baseURL:    "http://localhost",
+		marshaller: mockMarshaller,
 	}
 
 	inputs := []base.InferInput{

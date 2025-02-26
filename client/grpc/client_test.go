@@ -5,7 +5,6 @@ import (
 	"errors"
 	"github.com/Trendyol/go-triton-client/base"
 	"github.com/Trendyol/go-triton-client/client/grpc/grpc_generated_v2"
-	"github.com/Trendyol/go-triton-client/converter"
 	"github.com/Trendyol/go-triton-client/mocks"
 	"github.com/Trendyol/go-triton-client/models"
 	"github.com/Trendyol/go-triton-client/options"
@@ -574,9 +573,8 @@ func TestInfer(t *testing.T) {
 	mockClient.EXPECT().ModelInfer(gomock.Any(), gomock.Any()).Return(&grpc_generated_v2.ModelInferResponse{}, nil)
 
 	c := &client{
-		client:        mockClient,
-		dataConverter: converter.NewDataConverter(),
-		verbose:       true,
+		client:  mockClient,
+		verbose: true,
 	}
 
 	inputs := []base.InferInput{
@@ -798,14 +796,12 @@ func TestInfer_NotSuccessResponse(t *testing.T) {
 	modelName := "model1"
 	modelVersion := "1"
 	mockClient := mocks.NewMockGRPCInferenceServiceClient(ctrl)
-	dataConverter := converter.NewDataConverter()
 
 	mockClient.EXPECT().ModelInfer(gomock.Any(), gomock.Any()).Return(nil, errors.New("inference error"))
 
 	c := &client{
-		client:        mockClient,
-		dataConverter: dataConverter,
-		verbose:       true,
+		client:  mockClient,
+		verbose: true,
 	}
 
 	inputs := []base.InferInput{

@@ -7,7 +7,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/Trendyol/go-triton-client/base"
-	"github.com/Trendyol/go-triton-client/converter"
 	"github.com/Trendyol/go-triton-client/marshaller"
 	"github.com/Trendyol/go-triton-client/models"
 	"github.com/Trendyol/go-triton-client/options"
@@ -27,7 +26,6 @@ type client struct {
 	ssl               bool
 	insecure          bool
 	httpClient        base.HttpClient
-	dataConverter     converter.DataConverter
 	marshaller        base.Marshaller
 	logger            *log.Logger
 }
@@ -65,7 +63,6 @@ func NewClient(url string, verbose bool, connectionTimeout float64, networkTimeo
 		insecure:          insecure,
 		httpClient:        base.NewHttpClient(connectionTimeout, insecure, httpClient),
 		logger:            logger,
-		dataConverter:     converter.NewDataConverter(),
 		marshaller:        marshaller.NewJSONMarshaller(),
 	}, nil
 }
@@ -584,5 +581,5 @@ func (c *client) Infer(
 
 	// Map the response to the InferResult model
 	responseWrapper := NewResponseWrapper(resp)
-	return NewInferResult(responseWrapper, c.dataConverter, c.verbose)
+	return NewInferResult(responseWrapper, c.verbose)
 }
