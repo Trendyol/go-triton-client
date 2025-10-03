@@ -1,9 +1,11 @@
 package base
 
 import (
-	"github.com/stretchr/testify/assert"
 	"reflect"
 	"testing"
+
+	"github.com/Trendyol/go-triton-client/tensors"
+	"github.com/stretchr/testify/assert"
 )
 
 func TestBaseInferInput_GetName(t *testing.T) {
@@ -122,6 +124,7 @@ func TestGetDatatype(t *testing.T) {
 		{[]int16{int16(1), int16(1)}, "INT16"},
 		{[]int32{1, 2}, "INT32"},
 		{[]int64{1, 2}, "INT64"},
+		{tensors.Uint8Tensor{1, 2}, "UINT8"},
 		{[]uint16{1, 2}, "UINT16"},
 		{[]uint32{1, 2}, "UINT32"},
 		{[]uint64{1, 2}, "UINT64"},

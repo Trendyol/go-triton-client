@@ -3,6 +3,9 @@ package grpc
 import (
 	"context"
 	"errors"
+	"log"
+	"testing"
+
 	"github.com/Trendyol/go-triton-client/base"
 	"github.com/Trendyol/go-triton-client/client/grpc/grpc_generated_v2"
 	"github.com/Trendyol/go-triton-client/mocks"
@@ -10,15 +13,13 @@ import (
 	"github.com/Trendyol/go-triton-client/options"
 	"github.com/stretchr/testify/assert"
 	"go.uber.org/mock/gomock"
-	"log"
-	"testing"
 )
 
 func TestNewClient_Success(t *testing.T) {
 	mockCtrl := gomock.NewController(t)
 	defer mockCtrl.Finish()
 
-	c, err := NewClient("localhost:50051", true, 30.0, 10.0, false, false, nil)
+	c, err := NewClient("localhost:50051", true, 30.0, 10.0, false, false, nil, nil)
 
 	assert.NoError(t, err)
 	assert.NotNil(t, c)
@@ -28,7 +29,7 @@ func TestNewClient_Error(t *testing.T) {
 	mockCtrl := gomock.NewController(t)
 	defer mockCtrl.Finish()
 
-	c, err := NewClient("invalid_url\n", true, 30.0, 10.0, false, false, nil)
+	c, err := NewClient("invalid_url\n", true, 30.0, 10.0, false, false, nil, nil)
 
 	assert.Error(t, err)
 	assert.Nil(t, c)

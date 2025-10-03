@@ -5,9 +5,11 @@ import (
 	"encoding/binary"
 	"errors"
 	"fmt"
-	"github.com/x448/float16"
 	"io"
 	"math"
+
+	"github.com/Trendyol/go-triton-client/tensors"
+	"github.com/x448/float16"
 )
 
 func SerializeTensor(inputTensor any) ([]byte, error) {
@@ -21,6 +23,12 @@ func SerializeTensor(inputTensor any) ([]byte, error) {
 // serializeTensorToWriter writes the tensor data into the provided io.Writer.
 func serializeTensorToWriter(inputTensor any, w io.Writer) error {
 	switch tensor := inputTensor.(type) {
+	case tensors.Uint8Tensor:
+		for _, v := range tensor {
+			if err := binary.Write(w, binary.LittleEndian, v); err != nil {
+				return err
+			}
+		}
 	case []int:
 		for _, v := range tensor {
 			if err := binary.Write(w, binary.LittleEndian, int64(v)); err != nil {
