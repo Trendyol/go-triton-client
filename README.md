@@ -96,7 +96,7 @@ func createGRPCClient() {
         3,                           // network timeout in second
         true,                             // use SSL
         true,                             // insecure connection
-        nil,                              // existing gRPC connection (optional)
+        nil,                              // keep-alive parameters
         nil,                              // logger (optional)
     )
     if err != nil {
