@@ -3,7 +3,6 @@ package http
 import (
 	"encoding/json"
 	"github.com/Trendyol/go-triton-client/base"
-	"github.com/Trendyol/go-triton-client/marshaller"
 	"github.com/Trendyol/go-triton-client/options"
 	"net/http"
 	"reflect"
@@ -53,7 +52,6 @@ func TestNewRequestWrapper(t *testing.T) {
 		modelVersion,
 		inputs,
 		outputs,
-		marshaller.NewJSONMarshaller(),
 		opts,
 	)
 
@@ -105,7 +103,6 @@ func TestPrepareRequest(t *testing.T) {
 		"",
 		[]base.InferInput{},
 		[]base.InferOutput{},
-		marshaller.NewJSONMarshaller(),
 		nil,
 	)
 
@@ -130,7 +127,6 @@ func TestPrepareRequestWithVersion(t *testing.T) {
 		"2",
 		[]base.InferInput{},
 		[]base.InferOutput{},
-		marshaller.NewJSONMarshaller(),
 		nil,
 	)
 
@@ -156,7 +152,6 @@ func TestGetInferenceRequest(t *testing.T) {
 		"",
 		[]base.InferInput{input},
 		[]base.InferOutput{},
-		marshaller.NewJSONMarshaller(),
 		&options.InferOptions{
 			RequestID: &requestId,
 		},
@@ -194,7 +189,6 @@ func TestGetInferenceRequestError(t *testing.T) {
 		"",
 		nil,
 		nil,
-		marshaller.NewJSONMarshaller(),
 		&options.InferOptions{
 			Parameters: map[string]any{
 				"sequence_id": 123,
@@ -218,7 +212,6 @@ func TestPrepareHeaders(t *testing.T) {
 		"",
 		nil,
 		nil,
-		marshaller.NewJSONMarshaller(),
 		&options.InferOptions{
 			RequestCompressionAlgorithm:  &gzipAlg,
 			ResponseCompressionAlgorithm: &deflateAlg,
@@ -244,7 +237,6 @@ func TestPrepareHeadersNoCompression(t *testing.T) {
 		"",
 		nil,
 		nil,
-		marshaller.NewJSONMarshaller(),
 		nil,
 	)
 	headers := wrapper.prepareHeaders(&jsonSize)
@@ -270,7 +262,6 @@ func TestAddSequenceParameters(t *testing.T) {
 		"",
 		nil,
 		nil,
-		marshaller.NewJSONMarshaller(),
 		&options.InferOptions{
 			SequenceID:    &sequenceID,
 			SequenceStart: &sequenceStart,
@@ -299,7 +290,6 @@ func TestAddPriorityAndTimeout(t *testing.T) {
 		"",
 		nil,
 		nil,
-		marshaller.NewJSONMarshaller(),
 		&options.InferOptions{
 			Priority: &priority,
 			Timeout:  &timeout,
@@ -322,7 +312,6 @@ func TestAddCustomParameters(t *testing.T) {
 		"",
 		nil,
 		nil,
-		marshaller.NewJSONMarshaller(),
 		&options.InferOptions{
 			Parameters: map[string]any{
 				"custom_param": "value",
@@ -348,7 +337,6 @@ func TestAddCustomParametersReservedKey(t *testing.T) {
 			"",
 			nil,
 			nil,
-			marshaller.NewJSONMarshaller(),
 			&options.InferOptions{
 				Parameters: map[string]any{
 					key: 123,
@@ -370,7 +358,6 @@ func TestConvertInputsToTensors(t *testing.T) {
 		"",
 		[]base.InferInput{input},
 		nil,
-		marshaller.NewJSONMarshaller(),
 		nil,
 	)
 	tensors := wrapper.convertInputsToTensors()
@@ -396,7 +383,6 @@ func TestConvertOutputsToTensors(t *testing.T) {
 		"",
 		nil,
 		[]base.InferOutput{output},
-		marshaller.NewJSONMarshaller(),
 		nil,
 	)
 	tensors := wrapper.convertOutputsToTensors()
@@ -419,7 +405,6 @@ func TestPrepareHeadersNilJsonSize(t *testing.T) {
 		"",
 		nil,
 		nil,
-		marshaller.NewJSONMarshaller(),
 		nil,
 	)
 	headers := wrapper.prepareHeaders(nil)
@@ -435,7 +420,6 @@ func TestGetInferenceRequestNoInputs(t *testing.T) {
 		"",
 		[]base.InferInput{},
 		nil,
-		marshaller.NewJSONMarshaller(),
 		nil,
 	)
 
@@ -470,7 +454,6 @@ func TestGetInferenceRequestWithOutputs(t *testing.T) {
 		"",
 		[]base.InferInput{input},
 		[]base.InferOutput{output},
-		marshaller.NewJSONMarshaller(),
 		nil,
 	)
 
@@ -506,7 +489,6 @@ func TestPrepareRequestError(t *testing.T) {
 		"",
 		nil,
 		nil,
-		marshaller.NewJSONMarshaller(),
 		&options.InferOptions{
 			Parameters: map[string]any{
 				"sequence_id": 123,
@@ -528,7 +510,6 @@ func TestGetInferenceRequestNoRawData(t *testing.T) {
 		"",
 		[]base.InferInput{input},
 		nil,
-		marshaller.NewJSONMarshaller(),
 		nil,
 	)
 
@@ -555,7 +536,6 @@ func TestPrepareHeadersInvalidAlgorithm(t *testing.T) {
 		"",
 		nil,
 		nil,
-		marshaller.NewJSONMarshaller(),
 		&options.InferOptions{
 			RequestCompressionAlgorithm: &invalidAlg,
 		},
@@ -573,7 +553,6 @@ func TestPrepareRequest_NewRequestError(t *testing.T) {
 		"",
 		[]base.InferInput{},
 		[]base.InferOutput{},
-		marshaller.NewJSONMarshaller(),
 		nil,
 	)
 
@@ -622,7 +601,6 @@ func TestPrepareRequest_SetHeaders(t *testing.T) {
 		"",
 		[]base.InferInput{},
 		[]base.InferOutput{},
-		marshaller.NewJSONMarshaller(),
 		opts,
 	)
 
@@ -651,7 +629,6 @@ func TestGetInferenceRequest_JSONMarshalError(t *testing.T) {
 		"",
 		nil,
 		nil,
-		marshaller.NewJSONMarshaller(),
 		&options.InferOptions{
 			Parameters: map[string]any{
 				"invalid_param": invalidValue,
@@ -674,7 +651,6 @@ func TestPrepareHeaders_DeflateCompression(t *testing.T) {
 		"",
 		nil,
 		nil,
-		marshaller.NewJSONMarshaller(),
 		&options.InferOptions{
 			RequestCompressionAlgorithm: &deflateAlg,
 		},

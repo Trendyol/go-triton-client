@@ -16,7 +16,6 @@ import (
 	grpc_generated_v2 "github.com/Trendyol/go-triton-client/client/grpc/grpc_generated_v2"
 	gomock "go.uber.org/mock/gomock"
 	grpc "google.golang.org/grpc"
-	metadata "google.golang.org/grpc/metadata"
 )
 
 // MockGRPCInferenceServiceClient is a mock of GRPCInferenceServiceClient interface.
@@ -224,14 +223,14 @@ func (mr *MockGRPCInferenceServiceClientMockRecorder) ModelStatistics(ctx, in an
 }
 
 // ModelStreamInfer mocks base method.
-func (m *MockGRPCInferenceServiceClient) ModelStreamInfer(ctx context.Context, opts ...grpc.CallOption) (grpc_generated_v2.GRPCInferenceService_ModelStreamInferClient, error) {
+func (m *MockGRPCInferenceServiceClient) ModelStreamInfer(ctx context.Context, opts ...grpc.CallOption) (grpc.BidiStreamingClient[grpc_generated_v2.ModelInferRequest, grpc_generated_v2.ModelStreamInferResponse], error) {
 	m.ctrl.T.Helper()
 	varargs := []any{ctx}
 	for _, a := range opts {
 		varargs = append(varargs, a)
 	}
 	ret := m.ctrl.Call(m, "ModelStreamInfer", varargs...)
-	ret0, _ := ret[0].(grpc_generated_v2.GRPCInferenceService_ModelStreamInferClient)
+	ret0, _ := ret[0].(grpc.BidiStreamingClient[grpc_generated_v2.ModelInferRequest, grpc_generated_v2.ModelStreamInferResponse])
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
@@ -443,144 +442,6 @@ func (mr *MockGRPCInferenceServiceClientMockRecorder) TraceSetting(ctx, in any, 
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "TraceSetting", reflect.TypeOf((*MockGRPCInferenceServiceClient)(nil).TraceSetting), varargs...)
 }
 
-// MockGRPCInferenceService_ModelStreamInferClient is a mock of GRPCInferenceService_ModelStreamInferClient interface.
-type MockGRPCInferenceService_ModelStreamInferClient struct {
-	ctrl     *gomock.Controller
-	recorder *MockGRPCInferenceService_ModelStreamInferClientMockRecorder
-	isgomock struct{}
-}
-
-// MockGRPCInferenceService_ModelStreamInferClientMockRecorder is the mock recorder for MockGRPCInferenceService_ModelStreamInferClient.
-type MockGRPCInferenceService_ModelStreamInferClientMockRecorder struct {
-	mock *MockGRPCInferenceService_ModelStreamInferClient
-}
-
-// NewMockGRPCInferenceService_ModelStreamInferClient creates a new mock instance.
-func NewMockGRPCInferenceService_ModelStreamInferClient(ctrl *gomock.Controller) *MockGRPCInferenceService_ModelStreamInferClient {
-	mock := &MockGRPCInferenceService_ModelStreamInferClient{ctrl: ctrl}
-	mock.recorder = &MockGRPCInferenceService_ModelStreamInferClientMockRecorder{mock}
-	return mock
-}
-
-// EXPECT returns an object that allows the caller to indicate expected use.
-func (m *MockGRPCInferenceService_ModelStreamInferClient) EXPECT() *MockGRPCInferenceService_ModelStreamInferClientMockRecorder {
-	return m.recorder
-}
-
-// CloseSend mocks base method.
-func (m *MockGRPCInferenceService_ModelStreamInferClient) CloseSend() error {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "CloseSend")
-	ret0, _ := ret[0].(error)
-	return ret0
-}
-
-// CloseSend indicates an expected call of CloseSend.
-func (mr *MockGRPCInferenceService_ModelStreamInferClientMockRecorder) CloseSend() *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CloseSend", reflect.TypeOf((*MockGRPCInferenceService_ModelStreamInferClient)(nil).CloseSend))
-}
-
-// Context mocks base method.
-func (m *MockGRPCInferenceService_ModelStreamInferClient) Context() context.Context {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "Context")
-	ret0, _ := ret[0].(context.Context)
-	return ret0
-}
-
-// Context indicates an expected call of Context.
-func (mr *MockGRPCInferenceService_ModelStreamInferClientMockRecorder) Context() *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Context", reflect.TypeOf((*MockGRPCInferenceService_ModelStreamInferClient)(nil).Context))
-}
-
-// Header mocks base method.
-func (m *MockGRPCInferenceService_ModelStreamInferClient) Header() (metadata.MD, error) {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "Header")
-	ret0, _ := ret[0].(metadata.MD)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
-}
-
-// Header indicates an expected call of Header.
-func (mr *MockGRPCInferenceService_ModelStreamInferClientMockRecorder) Header() *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Header", reflect.TypeOf((*MockGRPCInferenceService_ModelStreamInferClient)(nil).Header))
-}
-
-// Recv mocks base method.
-func (m *MockGRPCInferenceService_ModelStreamInferClient) Recv() (*grpc_generated_v2.ModelStreamInferResponse, error) {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "Recv")
-	ret0, _ := ret[0].(*grpc_generated_v2.ModelStreamInferResponse)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
-}
-
-// Recv indicates an expected call of Recv.
-func (mr *MockGRPCInferenceService_ModelStreamInferClientMockRecorder) Recv() *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Recv", reflect.TypeOf((*MockGRPCInferenceService_ModelStreamInferClient)(nil).Recv))
-}
-
-// RecvMsg mocks base method.
-func (m_2 *MockGRPCInferenceService_ModelStreamInferClient) RecvMsg(m any) error {
-	m_2.ctrl.T.Helper()
-	ret := m_2.ctrl.Call(m_2, "RecvMsg", m)
-	ret0, _ := ret[0].(error)
-	return ret0
-}
-
-// RecvMsg indicates an expected call of RecvMsg.
-func (mr *MockGRPCInferenceService_ModelStreamInferClientMockRecorder) RecvMsg(m any) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RecvMsg", reflect.TypeOf((*MockGRPCInferenceService_ModelStreamInferClient)(nil).RecvMsg), m)
-}
-
-// Send mocks base method.
-func (m *MockGRPCInferenceService_ModelStreamInferClient) Send(arg0 *grpc_generated_v2.ModelInferRequest) error {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "Send", arg0)
-	ret0, _ := ret[0].(error)
-	return ret0
-}
-
-// Send indicates an expected call of Send.
-func (mr *MockGRPCInferenceService_ModelStreamInferClientMockRecorder) Send(arg0 any) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Send", reflect.TypeOf((*MockGRPCInferenceService_ModelStreamInferClient)(nil).Send), arg0)
-}
-
-// SendMsg mocks base method.
-func (m_2 *MockGRPCInferenceService_ModelStreamInferClient) SendMsg(m any) error {
-	m_2.ctrl.T.Helper()
-	ret := m_2.ctrl.Call(m_2, "SendMsg", m)
-	ret0, _ := ret[0].(error)
-	return ret0
-}
-
-// SendMsg indicates an expected call of SendMsg.
-func (mr *MockGRPCInferenceService_ModelStreamInferClientMockRecorder) SendMsg(m any) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SendMsg", reflect.TypeOf((*MockGRPCInferenceService_ModelStreamInferClient)(nil).SendMsg), m)
-}
-
-// Trailer mocks base method.
-func (m *MockGRPCInferenceService_ModelStreamInferClient) Trailer() metadata.MD {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "Trailer")
-	ret0, _ := ret[0].(metadata.MD)
-	return ret0
-}
-
-// Trailer indicates an expected call of Trailer.
-func (mr *MockGRPCInferenceService_ModelStreamInferClientMockRecorder) Trailer() *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Trailer", reflect.TypeOf((*MockGRPCInferenceService_ModelStreamInferClient)(nil).Trailer))
-}
-
 // MockGRPCInferenceServiceServer is a mock of GRPCInferenceServiceServer interface.
 type MockGRPCInferenceServiceServer struct {
 	ctrl     *gomock.Controller
@@ -741,7 +602,7 @@ func (mr *MockGRPCInferenceServiceServerMockRecorder) ModelStatistics(arg0, arg1
 }
 
 // ModelStreamInfer mocks base method.
-func (m *MockGRPCInferenceServiceServer) ModelStreamInfer(arg0 grpc_generated_v2.GRPCInferenceService_ModelStreamInferServer) error {
+func (m *MockGRPCInferenceServiceServer) ModelStreamInfer(arg0 grpc.BidiStreamingServer[grpc_generated_v2.ModelInferRequest, grpc_generated_v2.ModelStreamInferResponse]) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "ModelStreamInfer", arg0)
 	ret0, _ := ret[0].(error)
@@ -950,139 +811,4 @@ func (m *MockUnsafeGRPCInferenceServiceServer) mustEmbedUnimplementedGRPCInferen
 func (mr *MockUnsafeGRPCInferenceServiceServerMockRecorder) mustEmbedUnimplementedGRPCInferenceServiceServer() *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "mustEmbedUnimplementedGRPCInferenceServiceServer", reflect.TypeOf((*MockUnsafeGRPCInferenceServiceServer)(nil).mustEmbedUnimplementedGRPCInferenceServiceServer))
-}
-
-// MockGRPCInferenceService_ModelStreamInferServer is a mock of GRPCInferenceService_ModelStreamInferServer interface.
-type MockGRPCInferenceService_ModelStreamInferServer struct {
-	ctrl     *gomock.Controller
-	recorder *MockGRPCInferenceService_ModelStreamInferServerMockRecorder
-	isgomock struct{}
-}
-
-// MockGRPCInferenceService_ModelStreamInferServerMockRecorder is the mock recorder for MockGRPCInferenceService_ModelStreamInferServer.
-type MockGRPCInferenceService_ModelStreamInferServerMockRecorder struct {
-	mock *MockGRPCInferenceService_ModelStreamInferServer
-}
-
-// NewMockGRPCInferenceService_ModelStreamInferServer creates a new mock instance.
-func NewMockGRPCInferenceService_ModelStreamInferServer(ctrl *gomock.Controller) *MockGRPCInferenceService_ModelStreamInferServer {
-	mock := &MockGRPCInferenceService_ModelStreamInferServer{ctrl: ctrl}
-	mock.recorder = &MockGRPCInferenceService_ModelStreamInferServerMockRecorder{mock}
-	return mock
-}
-
-// EXPECT returns an object that allows the caller to indicate expected use.
-func (m *MockGRPCInferenceService_ModelStreamInferServer) EXPECT() *MockGRPCInferenceService_ModelStreamInferServerMockRecorder {
-	return m.recorder
-}
-
-// Context mocks base method.
-func (m *MockGRPCInferenceService_ModelStreamInferServer) Context() context.Context {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "Context")
-	ret0, _ := ret[0].(context.Context)
-	return ret0
-}
-
-// Context indicates an expected call of Context.
-func (mr *MockGRPCInferenceService_ModelStreamInferServerMockRecorder) Context() *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Context", reflect.TypeOf((*MockGRPCInferenceService_ModelStreamInferServer)(nil).Context))
-}
-
-// Recv mocks base method.
-func (m *MockGRPCInferenceService_ModelStreamInferServer) Recv() (*grpc_generated_v2.ModelInferRequest, error) {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "Recv")
-	ret0, _ := ret[0].(*grpc_generated_v2.ModelInferRequest)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
-}
-
-// Recv indicates an expected call of Recv.
-func (mr *MockGRPCInferenceService_ModelStreamInferServerMockRecorder) Recv() *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Recv", reflect.TypeOf((*MockGRPCInferenceService_ModelStreamInferServer)(nil).Recv))
-}
-
-// RecvMsg mocks base method.
-func (m_2 *MockGRPCInferenceService_ModelStreamInferServer) RecvMsg(m any) error {
-	m_2.ctrl.T.Helper()
-	ret := m_2.ctrl.Call(m_2, "RecvMsg", m)
-	ret0, _ := ret[0].(error)
-	return ret0
-}
-
-// RecvMsg indicates an expected call of RecvMsg.
-func (mr *MockGRPCInferenceService_ModelStreamInferServerMockRecorder) RecvMsg(m any) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RecvMsg", reflect.TypeOf((*MockGRPCInferenceService_ModelStreamInferServer)(nil).RecvMsg), m)
-}
-
-// Send mocks base method.
-func (m *MockGRPCInferenceService_ModelStreamInferServer) Send(arg0 *grpc_generated_v2.ModelStreamInferResponse) error {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "Send", arg0)
-	ret0, _ := ret[0].(error)
-	return ret0
-}
-
-// Send indicates an expected call of Send.
-func (mr *MockGRPCInferenceService_ModelStreamInferServerMockRecorder) Send(arg0 any) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Send", reflect.TypeOf((*MockGRPCInferenceService_ModelStreamInferServer)(nil).Send), arg0)
-}
-
-// SendHeader mocks base method.
-func (m *MockGRPCInferenceService_ModelStreamInferServer) SendHeader(arg0 metadata.MD) error {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "SendHeader", arg0)
-	ret0, _ := ret[0].(error)
-	return ret0
-}
-
-// SendHeader indicates an expected call of SendHeader.
-func (mr *MockGRPCInferenceService_ModelStreamInferServerMockRecorder) SendHeader(arg0 any) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SendHeader", reflect.TypeOf((*MockGRPCInferenceService_ModelStreamInferServer)(nil).SendHeader), arg0)
-}
-
-// SendMsg mocks base method.
-func (m_2 *MockGRPCInferenceService_ModelStreamInferServer) SendMsg(m any) error {
-	m_2.ctrl.T.Helper()
-	ret := m_2.ctrl.Call(m_2, "SendMsg", m)
-	ret0, _ := ret[0].(error)
-	return ret0
-}
-
-// SendMsg indicates an expected call of SendMsg.
-func (mr *MockGRPCInferenceService_ModelStreamInferServerMockRecorder) SendMsg(m any) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SendMsg", reflect.TypeOf((*MockGRPCInferenceService_ModelStreamInferServer)(nil).SendMsg), m)
-}
-
-// SetHeader mocks base method.
-func (m *MockGRPCInferenceService_ModelStreamInferServer) SetHeader(arg0 metadata.MD) error {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "SetHeader", arg0)
-	ret0, _ := ret[0].(error)
-	return ret0
-}
-
-// SetHeader indicates an expected call of SetHeader.
-func (mr *MockGRPCInferenceService_ModelStreamInferServerMockRecorder) SetHeader(arg0 any) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SetHeader", reflect.TypeOf((*MockGRPCInferenceService_ModelStreamInferServer)(nil).SetHeader), arg0)
-}
-
-// SetTrailer mocks base method.
-func (m *MockGRPCInferenceService_ModelStreamInferServer) SetTrailer(arg0 metadata.MD) {
-	m.ctrl.T.Helper()
-	m.ctrl.Call(m, "SetTrailer", arg0)
-}
-
-// SetTrailer indicates an expected call of SetTrailer.
-func (mr *MockGRPCInferenceService_ModelStreamInferServerMockRecorder) SetTrailer(arg0 any) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SetTrailer", reflect.TypeOf((*MockGRPCInferenceService_ModelStreamInferServer)(nil).SetTrailer), arg0)
 }
