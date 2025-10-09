@@ -9,6 +9,7 @@ import (
 	"math"
 	"unsafe"
 
+	"github.com/Trendyol/go-triton-client/tensors"
 	"github.com/x448/float16"
 )
 
@@ -26,7 +27,7 @@ func serializeTensorToWriter(inputTensor any, w io.Writer) error {
 	switch tensor := inputTensor.(type) {
 	// Grouping cases for fixed-size numeric types allows for a single, efficient write.
 	// binary.Write is optimized to handle slices of these types directly.
-	case []int32, []int64, []uint16, []uint32, []uint64, []float32, []float64:
+	case []int32, []int64, tensors.Uint8Tensor, []uint16, []uint32, []uint64, []float32, []float64:
 		return binary.Write(w, binary.LittleEndian, tensor)
 
 	// The native `int` type can be 32 or 64 bits depending on the architecture.

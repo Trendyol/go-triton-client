@@ -10,6 +10,8 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/Trendyol/go-triton-client/tensors"
+
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
@@ -48,6 +50,14 @@ func serializeInt64(data []int64) []byte {
 }
 
 func serializeInt32(data []int32) []byte {
+	var buf bytes.Buffer
+	for _, v := range data {
+		binary.Write(&buf, binary.LittleEndian, v)
+	}
+	return buf.Bytes()
+}
+
+func serializeUint8(data []uint8) []byte {
 	var buf bytes.Buffer
 	for _, v := range data {
 		binary.Write(&buf, binary.LittleEndian, v)
@@ -116,6 +126,7 @@ func TestSerializeTensor(t *testing.T) {
 		{"int slice", []int{1, 2, 3}, serializeInt64([]int64{1, 2, 3}), false},
 		{"int32 slice", []int32{1, 2, 3}, serializeInt32([]int32{1, 2, 3}), false},
 		{"int64 slice", []int64{1, 2, 3}, serializeInt64([]int64{1, 2, 3}), false},
+		{"uint8 slice", tensors.Uint8Tensor{1, 2, 3}, serializeUint8([]uint8{1, 2, 3}), false},
 		{"uint16 slice", []uint16{1, 2, 3}, serializeUint16([]uint16{1, 2, 3}), false},
 		{"uint32 slice", []uint32{1, 2, 3}, serializeUint32([]uint32{1, 2, 3}), false},
 		{"uint64 slice", []uint64{1, 2, 3}, serializeUint64([]uint64{1, 2, 3}), false},
@@ -219,6 +230,14 @@ func TestSerializeTensor_Error(t *testing.T) {
 	t.Run("Simulate write error int64", func(t *testing.T) {
 		faultyWriter := &FaultyWriter{failOnWrite: true}
 		err := serializeTensorToWriter([]int64{1, 2, 3}, faultyWriter)
+		if err == nil || err.Error() != "write error" {
+			t.Errorf("Expected 'write error', got '%v'", err)
+		}
+	})
+
+	t.Run("Simulate write error uint16", func(t *testing.T) {
+		faultyWriter := &FaultyWriter{failOnWrite: true}
+		err := serializeTensorToWriter(tensors.Uint8Tensor{1, 2, 3}, faultyWriter)
 		if err == nil || err.Error() != "write error" {
 			t.Errorf("Expected 'write error', got '%v'", err)
 		}
