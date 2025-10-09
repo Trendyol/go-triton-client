@@ -2,6 +2,7 @@ package http
 
 import (
 	"bytes"
+	"encoding/json"
 	"fmt"
 	"github.com/Trendyol/go-triton-client/base"
 	"github.com/Trendyol/go-triton-client/options"
@@ -16,7 +17,6 @@ type RequestWrapper struct {
 	ModelVersion string
 	Inputs       []base.InferInput
 	Outputs      []base.InferOutput
-	Marshaller   base.Marshaller
 	Options      *options.InferOptions
 }
 
@@ -26,7 +26,6 @@ func NewRequestWrapper(
 	baseURL, modelName, modelVersion string,
 	inputs []base.InferInput,
 	outputs []base.InferOutput,
-	marshaller base.Marshaller,
 	opts *options.InferOptions,
 ) *RequestWrapper {
 	if opts == nil {
@@ -51,7 +50,6 @@ func NewRequestWrapper(
 		ModelVersion: modelVersion,
 		Inputs:       inputs,
 		Outputs:      outputs,
-		Marshaller:   marshaller,
 		Options:      opts,
 	}
 }
@@ -113,7 +111,7 @@ func (w *RequestWrapper) getInferenceRequest() ([]byte, *int, error) {
 		inferRequest["parameters"] = parameters
 	}
 
-	requestJSON, err := w.Marshaller.Marshal(inferRequest)
+	requestJSON, err := json.Marshal(inferRequest)
 	if err != nil {
 		return nil, nil, err
 	}

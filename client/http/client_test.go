@@ -8,7 +8,6 @@ import (
 	"errors"
 	"fmt"
 	"github.com/Trendyol/go-triton-client/base"
-	"github.com/Trendyol/go-triton-client/marshaller"
 	"github.com/Trendyol/go-triton-client/mocks"
 	"github.com/Trendyol/go-triton-client/models"
 	"github.com/Trendyol/go-triton-client/options"
@@ -232,7 +231,6 @@ func TestLoadModel(t *testing.T) {
 		baseURL:    "http://localhost",
 		httpClient: mockHttpClient,
 		logger:     log.Default(),
-		marshaller: marshaller.NewJSONMarshaller(),
 		verbose:    true,
 	}
 	err := c.LoadModel(context.Background(), "model", "", nil, &options.Options{})
@@ -254,7 +252,6 @@ func TestUnloadModel(t *testing.T) {
 		baseURL:    "http://localhost",
 		httpClient: mockHttpClient,
 		logger:     log.Default(),
-		marshaller: marshaller.NewJSONMarshaller(),
 		verbose:    true,
 	}
 	err := c.UnloadModel(context.Background(), "model", true, &options.Options{})
@@ -340,7 +337,6 @@ func TestUpdateLogSettings(t *testing.T) {
 		baseURL:    "http://localhost",
 		httpClient: mockHttpClient,
 		logger:     log.Default(),
-		marshaller: marshaller.NewJSONMarshaller(),
 		verbose:    true,
 	}
 	err := c.UpdateLogSettings(context.Background(), models.LogSettingsRequest{}, &options.Options{})
@@ -425,7 +421,6 @@ func TestRegisterSystemSharedMemory(t *testing.T) {
 		baseURL:    "http://localhost",
 		httpClient: mockHttpClient,
 		logger:     log.Default(),
-		marshaller: marshaller.NewJSONMarshaller(),
 		verbose:    true,
 	}
 	err := c.RegisterSystemSharedMemory(context.Background(), "region1", "key", 1024, 0, &options.Options{})
@@ -499,7 +494,6 @@ func TestRegisterCUDASharedMemory(t *testing.T) {
 		httpClient: mockHttpClient,
 		verbose:    true,
 		logger:     log.Default(),
-		marshaller: marshaller.NewJSONMarshaller(),
 	}
 	err := c.RegisterCUDASharedMemory(context.Background(), "cuda_region1", []byte("handle"), 0, 1024, &options.Options{})
 	if err != nil {
@@ -553,7 +547,6 @@ func TestInfer(t *testing.T) {
 		httpClient: mockHttpClient,
 		verbose:    true,
 		logger:     log.Default(),
-		marshaller: marshaller.NewJSONMarshaller(),
 	}
 	inputs := []base.InferInput{
 		NewInferInput("input", "FP32", []int64{1}, nil),
@@ -588,7 +581,6 @@ func TestErrorResponses(t *testing.T) {
 		baseURL:    "http://localhost",
 		httpClient: mockHttpClient,
 		logger:     log.Default(),
-		marshaller: marshaller.NewJSONMarshaller(),
 		verbose:    true,
 	}
 	_, err := c.GetServerMetadata(context.Background(), &options.Options{})
@@ -647,7 +639,6 @@ func TestErrorInHttpClientDo(t *testing.T) {
 		baseURL:    "http://localhost",
 		httpClient: mockHttpClient,
 		logger:     log.Default(),
-		marshaller: marshaller.NewJSONMarshaller(),
 		verbose:    true,
 	}
 	_, err := c.Infer(context.Background(), "model", "", nil, nil, &options.InferOptions{})
@@ -1016,7 +1007,6 @@ func TestLoadModel_InvalidJSON(t *testing.T) {
 		baseURL:    "http://localhost",
 		httpClient: mockHttpClient,
 		logger:     logger,
-		marshaller: marshaller.NewJSONMarshaller(),
 		verbose:    true,
 	}
 	err := c.LoadModel(context.Background(), modelName, "", nil, &options.Options{})
@@ -1052,7 +1042,6 @@ func TestLoadModel_WithConfigAndFiles(t *testing.T) {
 		baseURL:    "http://localhost",
 		httpClient: mockHttpClient,
 		logger:     logger,
-		marshaller: marshaller.NewJSONMarshaller(),
 		verbose:    true,
 	}
 	err := c.LoadModel(context.Background(), modelName, "file1", files, &options.Options{})
@@ -1069,7 +1058,6 @@ func TestInfer_NetworkError(t *testing.T) {
 	c := &client{
 		baseURL:    "http://localhost",
 		httpClient: mockHttpClient,
-		marshaller: marshaller.NewJSONMarshaller(),
 	}
 	inputs := []base.InferInput{
 		NewInferInput("input", "FP32", []int64{1}, nil),
@@ -1093,7 +1081,6 @@ func TestInfer_NonOKStatus(t *testing.T) {
 	c := &client{
 		baseURL:    "http://localhost",
 		httpClient: mockHttpClient,
-		marshaller: marshaller.NewJSONMarshaller(),
 	}
 	inputs := []base.InferInput{
 		NewInferInput("input", "FP32", []int64{1}, nil),
@@ -1117,7 +1104,6 @@ func TestInfer_InvalidJSONResponse(t *testing.T) {
 	c := &client{
 		baseURL:    "http://localhost",
 		httpClient: mockHttpClient,
-		marshaller: marshaller.NewJSONMarshaller(),
 	}
 	inputs := []base.InferInput{
 		NewInferInput("input", "FP32", []int64{1}, nil),
@@ -1125,35 +1111,6 @@ func TestInfer_InvalidJSONResponse(t *testing.T) {
 	_, err := c.Infer(context.Background(), "model", "", inputs, nil, &options.InferOptions{})
 	if err == nil {
 		t.Errorf("Expected error due to invalid JSON response")
-	}
-}
-
-func TestInfer_PrepareRequestError(t *testing.T) {
-	ctrl := gomock.NewController(t)
-	defer ctrl.Finish()
-
-	mockMarshaller := mocks.NewMockMarshaller(ctrl)
-	mockMarshaller.EXPECT().Marshal(gomock.Any()).Return(nil, errors.New("marshal error"))
-
-	c := &client{
-		baseURL:    "http://localhost",
-		marshaller: mockMarshaller,
-	}
-
-	inputs := []base.InferInput{
-		NewInferInput("input", "FP32", []int64{1}, nil),
-	}
-
-	_, err := c.Infer(
-		context.Background(),
-		"model",
-		"",
-		inputs,
-		nil,
-		&options.InferOptions{},
-	)
-	if err == nil || !strings.Contains(err.Error(), "marshal error") {
-		t.Errorf("Expected marshal error, got %v", err)
 	}
 }
 
@@ -1352,7 +1309,6 @@ func TestLoadModel_Success(t *testing.T) {
 		baseURL:    "http://localhost",
 		httpClient: mockHttpClient,
 		logger:     logger,
-		marshaller: marshaller.NewJSONMarshaller(),
 		verbose:    true,
 	}
 	err := c.LoadModel(context.Background(), modelName, "", nil, options)
@@ -1373,7 +1329,6 @@ func TestLoadModel_NetworkError(t *testing.T) {
 	c := &client{
 		baseURL:    "http://localhost",
 		httpClient: mockHttpClient,
-		marshaller: marshaller.NewJSONMarshaller(),
 		verbose:    true,
 	}
 	err := c.LoadModel(context.Background(), modelName, "", nil, options)
@@ -1397,7 +1352,6 @@ func TestLoadModel_NonOKStatus(t *testing.T) {
 	c := &client{
 		baseURL:    "http://localhost",
 		httpClient: mockHttpClient,
-		marshaller: marshaller.NewJSONMarshaller(),
 		verbose:    true,
 	}
 	err := c.LoadModel(context.Background(), modelName, "", nil, options)
@@ -1423,7 +1377,6 @@ func TestUnloadModel_Success(t *testing.T) {
 		baseURL:    "http://localhost",
 		httpClient: mockHttpClient,
 		logger:     logger,
-		marshaller: marshaller.NewJSONMarshaller(),
 		verbose:    true,
 	}
 	err := c.UnloadModel(context.Background(), modelName, true, options)
@@ -1444,7 +1397,6 @@ func TestUnloadModel_NetworkError(t *testing.T) {
 	c := &client{
 		baseURL:    "http://localhost",
 		httpClient: mockHttpClient,
-		marshaller: marshaller.NewJSONMarshaller(),
 		verbose:    true,
 	}
 	err := c.UnloadModel(context.Background(), modelName, true, options)
@@ -1468,7 +1420,6 @@ func TestUnloadModel_NonOKStatus(t *testing.T) {
 	c := &client{
 		baseURL:    "http://localhost",
 		httpClient: mockHttpClient,
-		marshaller: marshaller.NewJSONMarshaller(),
 		verbose:    true,
 	}
 	err := c.UnloadModel(context.Background(), modelName, true, options)
@@ -1523,7 +1474,6 @@ func TestGetTraceSettings_NetworkError(t *testing.T) {
 	mockHttpClient.EXPECT().Get(gomock.Any(), requestURI, options.Headers, options.QueryParams).Return(nil, expectedErr)
 	c := &client{
 		baseURL:    "http://localhost",
-		marshaller: marshaller.NewJSONMarshaller(),
 		verbose:    true,
 		httpClient: mockHttpClient,
 	}
@@ -1600,7 +1550,6 @@ func TestUpdateLogSettings_Success(t *testing.T) {
 		baseURL:    "http://localhost",
 		logger:     logger,
 		httpClient: mockHttpClient,
-		marshaller: marshaller.NewJSONMarshaller(),
 		verbose:    true,
 	}
 	err := c.UpdateLogSettings(context.Background(), requestBody, options)
@@ -1620,7 +1569,6 @@ func TestUpdateLogSettings_NetworkError(t *testing.T) {
 	c := &client{
 		baseURL:    "http://localhost",
 		httpClient: mockHttpClient,
-		marshaller: marshaller.NewJSONMarshaller(),
 		verbose:    true,
 	}
 	err := c.UpdateLogSettings(context.Background(), requestBody, options)
@@ -1643,7 +1591,6 @@ func TestUpdateLogSettings_NonOKStatus(t *testing.T) {
 	c := &client{
 		baseURL:    "http://localhost",
 		httpClient: mockHttpClient,
-		marshaller: marshaller.NewJSONMarshaller(),
 		verbose:    true,
 	}
 	err := c.UpdateLogSettings(context.Background(), requestBody, options)
@@ -1676,7 +1623,6 @@ func TestGetLogSettings_Success(t *testing.T) {
 		baseURL:    "http://localhost",
 		logger:     logger,
 		httpClient: mockHttpClient,
-		marshaller: marshaller.NewJSONMarshaller(),
 		verbose:    true,
 	}
 	response, err := c.GetLogSettings(context.Background(), options)
@@ -1698,7 +1644,6 @@ func TestGetLogSettings_NetworkError(t *testing.T) {
 	c := &client{
 		baseURL:    "http://localhost",
 		httpClient: mockHttpClient,
-		marshaller: marshaller.NewJSONMarshaller(),
 		verbose:    true,
 	}
 	_, err := c.GetLogSettings(context.Background(), options)
@@ -1720,7 +1665,6 @@ func TestGetLogSettings_NonOKStatus(t *testing.T) {
 	c := &client{
 		baseURL:    "http://localhost",
 		httpClient: mockHttpClient,
-		marshaller: marshaller.NewJSONMarshaller(),
 		verbose:    true,
 	}
 	_, err := c.GetLogSettings(context.Background(), options)
@@ -1743,66 +1687,11 @@ func TestGetLogSettings_InvalidJSON(t *testing.T) {
 	c := &client{
 		baseURL:    "http://localhost",
 		httpClient: mockHttpClient,
-		marshaller: marshaller.NewJSONMarshaller(),
 		verbose:    true,
 	}
 	_, err := c.GetLogSettings(context.Background(), options)
 	if err == nil {
 		t.Errorf("Expected error due to invalid JSON")
-	}
-}
-
-func TestLoadModel_MarshalError(t *testing.T) {
-	ctrl := gomock.NewController(t)
-	defer ctrl.Finish()
-
-	mockMarshaller := mocks.NewMockMarshaller(ctrl)
-	mockMarshaller.EXPECT().Marshal(gomock.Any()).Return(nil, errors.New("marshal error"))
-
-	c := &client{
-		baseURL:    "http://localhost",
-		marshaller: mockMarshaller,
-	}
-
-	err := c.LoadModel(context.Background(), "test_model", "config", nil, &options.Options{})
-	if err == nil || !strings.Contains(err.Error(), "marshal error") {
-		t.Errorf("Expected marshal error, got %v", err)
-	}
-}
-
-func TestUnloadModel_MarshalError(t *testing.T) {
-	ctrl := gomock.NewController(t)
-	defer ctrl.Finish()
-
-	mockMarshaller := mocks.NewMockMarshaller(ctrl)
-	mockMarshaller.EXPECT().Marshal(gomock.Any()).Return(nil, errors.New("marshal error"))
-
-	c := &client{
-		baseURL:    "http://localhost",
-		marshaller: mockMarshaller,
-	}
-
-	err := c.UnloadModel(context.Background(), "test_model", true, &options.Options{})
-	if err == nil || !strings.Contains(err.Error(), "marshal error") {
-		t.Errorf("Expected marshal error, got %v", err)
-	}
-}
-
-func TestUpdateLogSettings_MarshalError(t *testing.T) {
-	ctrl := gomock.NewController(t)
-	defer ctrl.Finish()
-
-	mockMarshaller := mocks.NewMockMarshaller(ctrl)
-	mockMarshaller.EXPECT().Marshal(gomock.Any()).Return(nil, errors.New("marshal error"))
-
-	c := &client{
-		baseURL:    "http://localhost",
-		marshaller: mockMarshaller,
-	}
-
-	err := c.UpdateLogSettings(context.Background(), models.LogSettingsRequest{}, &options.Options{})
-	if err == nil || !strings.Contains(err.Error(), "marshal error") {
-		t.Errorf("Expected marshal error, got %v", err)
 	}
 }
 
@@ -1827,7 +1716,6 @@ func TestGetSystemSharedMemoryStatus_Success(t *testing.T) {
 		baseURL:    "http://localhost",
 		httpClient: mockHttpClient,
 		logger:     logger,
-		marshaller: marshaller.NewJSONMarshaller(),
 		verbose:    true,
 	}
 	response, err := c.GetSystemSharedMemoryStatus(context.Background(), regionName, options)
@@ -1857,7 +1745,6 @@ func TestGetSystemSharedMemoryStatus_NoRegion(t *testing.T) {
 	c := &client{
 		baseURL:    "http://localhost",
 		httpClient: mockHttpClient,
-		marshaller: marshaller.NewJSONMarshaller(),
 		verbose:    true,
 		logger:     log.Default(),
 	}
@@ -1881,7 +1768,6 @@ func TestGetSystemSharedMemoryStatus_NetworkError(t *testing.T) {
 	c := &client{
 		baseURL:    "http://localhost",
 		httpClient: mockHttpClient,
-		marshaller: marshaller.NewJSONMarshaller(),
 		verbose:    true,
 	}
 	_, err := c.GetSystemSharedMemoryStatus(context.Background(), "", options)
@@ -1904,7 +1790,6 @@ func TestGetSystemSharedMemoryStatus_NonOKStatus(t *testing.T) {
 	c := &client{
 		baseURL:    "http://localhost",
 		httpClient: mockHttpClient,
-		marshaller: marshaller.NewJSONMarshaller(),
 		verbose:    true,
 	}
 	_, err := c.GetSystemSharedMemoryStatus(context.Background(), "", options)
@@ -1928,7 +1813,6 @@ func TestGetSystemSharedMemoryStatus_InvalidJSON(t *testing.T) {
 	c := &client{
 		baseURL:    "http://localhost",
 		httpClient: mockHttpClient,
-		marshaller: marshaller.NewJSONMarshaller(),
 		verbose:    true,
 	}
 	_, err := c.GetSystemSharedMemoryStatus(context.Background(), "", options)
@@ -1940,8 +1824,6 @@ func TestGetSystemSharedMemoryStatus_InvalidJSON(t *testing.T) {
 func TestRegisterSystemSharedMemory_Success(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
-	mockMarshaller := mocks.NewMockMarshaller(ctrl)
-	mockMarshaller.EXPECT().Marshal(gomock.Any()).Return([]byte(`{"key":"key1","offset":0,"byte_size":1024}`), nil)
 	mockHttpClient := mocks.NewMockHttpClient(ctrl)
 	requestURI := "v2/systemsharedmemory/region/region1/register"
 	mockResponse := &http.Response{
@@ -1949,11 +1831,10 @@ func TestRegisterSystemSharedMemory_Success(t *testing.T) {
 		Body:       io.NopCloser(strings.NewReader("")),
 	}
 	options := &options.Options{}
-	mockHttpClient.EXPECT().Post(gomock.Any(), requestURI, `{"key":"key1","offset":0,"byte_size":1024}`, options.Headers, options.QueryParams).Return(mockResponse, nil)
+	mockHttpClient.EXPECT().Post(gomock.Any(), requestURI, `{"byte_size":1024,"key":"key1","offset":0}`, options.Headers, options.QueryParams).Return(mockResponse, nil)
 	logger := log.Default()
 	c := &client{
 		baseURL:    "http://localhost",
-		marshaller: mockMarshaller,
 		httpClient: mockHttpClient,
 		logger:     logger,
 		verbose:    true,
@@ -1964,26 +1845,9 @@ func TestRegisterSystemSharedMemory_Success(t *testing.T) {
 	}
 }
 
-func TestRegisterSystemSharedMemory_MarshalError(t *testing.T) {
-	ctrl := gomock.NewController(t)
-	defer ctrl.Finish()
-	mockMarshaller := mocks.NewMockMarshaller(ctrl)
-	mockMarshaller.EXPECT().Marshal(gomock.Any()).Return(nil, errors.New("marshal error"))
-	c := &client{
-		baseURL:    "http://localhost",
-		marshaller: mockMarshaller,
-	}
-	err := c.RegisterSystemSharedMemory(context.Background(), "region1", "key1", 1024, 0, &options.Options{})
-	if err == nil || !strings.Contains(err.Error(), "marshal error") {
-		t.Errorf("Expected marshal error, got %v", err)
-	}
-}
-
 func TestRegisterSystemSharedMemory_NetworkError(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
-	mockMarshaller := mocks.NewMockMarshaller(ctrl)
-	mockMarshaller.EXPECT().Marshal(gomock.Any()).Return([]byte(`{"key":"key1","offset":0,"byte_size":1024}`), nil)
 	mockHttpClient := mocks.NewMockHttpClient(ctrl)
 	expectedErr := errors.New("network error")
 	requestURI := "v2/systemsharedmemory/region/region1/register"
@@ -1991,7 +1855,6 @@ func TestRegisterSystemSharedMemory_NetworkError(t *testing.T) {
 	mockHttpClient.EXPECT().Post(gomock.Any(), requestURI, gomock.Any(), options.Headers, options.QueryParams).Return(nil, expectedErr)
 	c := &client{
 		baseURL:    "http://localhost",
-		marshaller: mockMarshaller,
 		httpClient: mockHttpClient,
 	}
 	err := c.RegisterSystemSharedMemory(context.Background(), "region1", "key1", 1024, 0, options)
@@ -2003,8 +1866,6 @@ func TestRegisterSystemSharedMemory_NetworkError(t *testing.T) {
 func TestRegisterSystemSharedMemory_NonOKStatus(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
-	mockMarshaller := mocks.NewMockMarshaller(ctrl)
-	mockMarshaller.EXPECT().Marshal(gomock.Any()).Return([]byte(`{"key":"key1","offset":0,"byte_size":1024}`), nil)
 	mockHttpClient := mocks.NewMockHttpClient(ctrl)
 	mockResponse := &http.Response{
 		StatusCode: http.StatusBadRequest,
@@ -2015,7 +1876,6 @@ func TestRegisterSystemSharedMemory_NonOKStatus(t *testing.T) {
 	mockHttpClient.EXPECT().Post(gomock.Any(), requestURI, gomock.Any(), options.Headers, options.QueryParams).Return(mockResponse, nil)
 	c := &client{
 		baseURL:    "http://localhost",
-		marshaller: mockMarshaller,
 		httpClient: mockHttpClient,
 	}
 	err := c.RegisterSystemSharedMemory(context.Background(), "region1", "key1", 1024, 0, options)
@@ -2040,7 +1900,6 @@ func TestUnregisterSystemSharedMemory_Success(t *testing.T) {
 		baseURL:    "http://localhost",
 		httpClient: mockHttpClient,
 		logger:     logger,
-		marshaller: marshaller.NewJSONMarshaller(),
 		verbose:    true,
 	}
 	err := c.UnregisterSystemSharedMemory(context.Background(), "region1", options)
@@ -2065,7 +1924,6 @@ func TestUnregisterSystemSharedMemory_SuccessWithoutName(t *testing.T) {
 		baseURL:    "http://localhost",
 		httpClient: mockHttpClient,
 		logger:     logger,
-		marshaller: marshaller.NewJSONMarshaller(),
 		verbose:    true,
 	}
 	err := c.UnregisterSystemSharedMemory(context.Background(), "", options)
@@ -2085,7 +1943,6 @@ func TestUnregisterSystemSharedMemory_NetworkError(t *testing.T) {
 	c := &client{
 		baseURL:    "http://localhost",
 		httpClient: mockHttpClient,
-		marshaller: marshaller.NewJSONMarshaller(),
 		verbose:    true,
 	}
 	err := c.UnregisterSystemSharedMemory(context.Background(), "", options)
@@ -2108,7 +1965,6 @@ func TestUnregisterSystemSharedMemory_NonOKStatus(t *testing.T) {
 	c := &client{
 		baseURL:    "http://localhost",
 		httpClient: mockHttpClient,
-		marshaller: marshaller.NewJSONMarshaller(),
 		verbose:    true,
 	}
 	err := c.UnregisterSystemSharedMemory(context.Background(), "", options)
@@ -2138,7 +1994,6 @@ func TestGetCUDASharedMemoryStatus_Success(t *testing.T) {
 		baseURL:    "http://localhost",
 		httpClient: mockHttpClient,
 		logger:     logger,
-		marshaller: marshaller.NewJSONMarshaller(),
 		verbose:    true,
 	}
 	response, err := c.GetCUDASharedMemoryStatus(context.Background(), regionName, options)
@@ -2161,7 +2016,6 @@ func TestGetCUDASharedMemoryStatus_NetworkError(t *testing.T) {
 	c := &client{
 		baseURL:    "http://localhost",
 		httpClient: mockHttpClient,
-		marshaller: marshaller.NewJSONMarshaller(),
 		verbose:    true,
 	}
 	_, err := c.GetCUDASharedMemoryStatus(context.Background(), "", options)
@@ -2184,7 +2038,6 @@ func TestGetCUDASharedMemoryStatus_NonOKStatus(t *testing.T) {
 	c := &client{
 		baseURL:    "http://localhost",
 		httpClient: mockHttpClient,
-		marshaller: marshaller.NewJSONMarshaller(),
 		verbose:    true,
 	}
 	_, err := c.GetCUDASharedMemoryStatus(context.Background(), "", options)
@@ -2208,7 +2061,6 @@ func TestGetCUDASharedMemoryStatus_InvalidJSON(t *testing.T) {
 	c := &client{
 		baseURL:    "http://localhost",
 		httpClient: mockHttpClient,
-		marshaller: marshaller.NewJSONMarshaller(),
 		verbose:    true,
 	}
 	_, err := c.GetCUDASharedMemoryStatus(context.Background(), "", options)
@@ -2220,11 +2072,9 @@ func TestGetCUDASharedMemoryStatus_InvalidJSON(t *testing.T) {
 func TestRegisterCUDASharedMemory_Success(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
-	mockMarshaller := mocks.NewMockMarshaller(ctrl)
 	rawHandle := []byte("handle")
 	rawHandleBase64 := base64.StdEncoding.EncodeToString(rawHandle)
-	expectedRequest := fmt.Sprintf(`{"raw_handle":{"b64":"%s"},"device_id":0,"byte_size":1024}`, rawHandleBase64)
-	mockMarshaller.EXPECT().Marshal(gomock.Any()).Return([]byte(expectedRequest), nil)
+	expectedRequest := fmt.Sprintf(`{"byte_size":1024,"device_id":0,"raw_handle":{"b64":"%s"}}`, rawHandleBase64)
 	mockHttpClient := mocks.NewMockHttpClient(ctrl)
 	requestURI := "v2/cudasharedmemory/region/cuda_region1/register"
 	mockResponse := &http.Response{
@@ -2236,7 +2086,6 @@ func TestRegisterCUDASharedMemory_Success(t *testing.T) {
 	logger := log.Default()
 	c := &client{
 		baseURL:    "http://localhost",
-		marshaller: mockMarshaller,
 		httpClient: mockHttpClient,
 		logger:     logger,
 		verbose:    true,
@@ -2247,29 +2096,12 @@ func TestRegisterCUDASharedMemory_Success(t *testing.T) {
 	}
 }
 
-func TestRegisterCUDASharedMemory_MarshalError(t *testing.T) {
-	ctrl := gomock.NewController(t)
-	defer ctrl.Finish()
-	mockMarshaller := mocks.NewMockMarshaller(ctrl)
-	mockMarshaller.EXPECT().Marshal(gomock.Any()).Return(nil, errors.New("marshal error"))
-	c := &client{
-		baseURL:    "http://localhost",
-		marshaller: mockMarshaller,
-	}
-	err := c.RegisterCUDASharedMemory(context.Background(), "cuda_region1", []byte("handle"), 0, 1024, &options.Options{})
-	if err == nil || !strings.Contains(err.Error(), "marshal error") {
-		t.Errorf("Expected marshal error, got %v", err)
-	}
-}
-
 func TestRegisterCUDASharedMemory_NetworkError(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
-	mockMarshaller := mocks.NewMockMarshaller(ctrl)
 	rawHandle := []byte("handle")
 	rawHandleBase64 := base64.StdEncoding.EncodeToString(rawHandle)
-	expectedRequest := fmt.Sprintf(`{"raw_handle":{"b64":"%s"},"device_id":0,"byte_size":1024}`, rawHandleBase64)
-	mockMarshaller.EXPECT().Marshal(gomock.Any()).Return([]byte(expectedRequest), nil)
+	expectedRequest := fmt.Sprintf(`{"byte_size":1024,"device_id":0,"raw_handle":{"b64":"%s"}}`, rawHandleBase64)
 	mockHttpClient := mocks.NewMockHttpClient(ctrl)
 	expectedErr := errors.New("network error")
 	requestURI := "v2/cudasharedmemory/region/cuda_region1/register"
@@ -2277,7 +2109,6 @@ func TestRegisterCUDASharedMemory_NetworkError(t *testing.T) {
 	mockHttpClient.EXPECT().Post(gomock.Any(), requestURI, expectedRequest, options.Headers, options.QueryParams).Return(nil, expectedErr)
 	c := &client{
 		baseURL:    "http://localhost",
-		marshaller: mockMarshaller,
 		httpClient: mockHttpClient,
 	}
 	err := c.RegisterCUDASharedMemory(context.Background(), "cuda_region1", rawHandle, 0, 1024, options)
@@ -2289,11 +2120,9 @@ func TestRegisterCUDASharedMemory_NetworkError(t *testing.T) {
 func TestRegisterCUDASharedMemory_NonOKStatus(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
-	mockMarshaller := mocks.NewMockMarshaller(ctrl)
 	rawHandle := []byte("handle")
 	rawHandleBase64 := base64.StdEncoding.EncodeToString(rawHandle)
-	expectedRequest := fmt.Sprintf(`{"raw_handle":{"b64":"%s"},"device_id":0,"byte_size":1024}`, rawHandleBase64)
-	mockMarshaller.EXPECT().Marshal(gomock.Any()).Return([]byte(expectedRequest), nil)
+	expectedRequest := fmt.Sprintf(`{"byte_size":1024,"device_id":0,"raw_handle":{"b64":"%s"}}`, rawHandleBase64)
 	mockHttpClient := mocks.NewMockHttpClient(ctrl)
 	mockResponse := &http.Response{
 		StatusCode: http.StatusForbidden,
@@ -2304,7 +2133,6 @@ func TestRegisterCUDASharedMemory_NonOKStatus(t *testing.T) {
 	mockHttpClient.EXPECT().Post(gomock.Any(), requestURI, expectedRequest, options.Headers, options.QueryParams).Return(mockResponse, nil)
 	c := &client{
 		baseURL:    "http://localhost",
-		marshaller: mockMarshaller,
 		httpClient: mockHttpClient,
 	}
 	err := c.RegisterCUDASharedMemory(context.Background(), "cuda_region1", rawHandle, 0, 1024, options)
@@ -2329,7 +2157,6 @@ func TestUnregisterCUDASharedMemory_Success(t *testing.T) {
 		baseURL:    "http://localhost",
 		httpClient: mockHttpClient,
 		logger:     logger,
-		marshaller: marshaller.NewJSONMarshaller(),
 		verbose:    true,
 	}
 	err := c.UnregisterCUDASharedMemory(context.Background(), "cuda_region1", options)
@@ -2354,7 +2181,6 @@ func TestUnregisterCUDASharedMemory_SuccessWithoutName(t *testing.T) {
 		baseURL:    "http://localhost",
 		httpClient: mockHttpClient,
 		logger:     logger,
-		marshaller: marshaller.NewJSONMarshaller(),
 		verbose:    true,
 	}
 	err := c.UnregisterCUDASharedMemory(context.Background(), "", options)
@@ -2374,7 +2200,6 @@ func TestUnregisterCUDASharedMemory_NetworkError(t *testing.T) {
 	c := &client{
 		baseURL:    "http://localhost",
 		httpClient: mockHttpClient,
-		marshaller: marshaller.NewJSONMarshaller(),
 		verbose:    true,
 	}
 	err := c.UnregisterCUDASharedMemory(context.Background(), "", options)
@@ -2397,7 +2222,6 @@ func TestUnregisterCUDASharedMemory_NonOKStatus(t *testing.T) {
 	c := &client{
 		baseURL:    "http://localhost",
 		httpClient: mockHttpClient,
-		marshaller: marshaller.NewJSONMarshaller(),
 		verbose:    true,
 	}
 	err := c.UnregisterCUDASharedMemory(context.Background(), "", options)
@@ -2431,7 +2255,6 @@ func TestGetInferenceStatistics_Success(t *testing.T) {
 		httpClient: mockHttpClient,
 		logger:     logger,
 		verbose:    true,
-		marshaller: marshaller.NewJSONMarshaller(),
 	}
 	response, err := c.GetInferenceStatistics(context.Background(), modelName, modelVersion, options)
 	if err != nil {
@@ -2454,7 +2277,6 @@ func TestGetInferenceStatistics_NetworkError(t *testing.T) {
 	c := &client{
 		baseURL:    "http://localhost",
 		httpClient: mockHttpClient,
-		marshaller: marshaller.NewJSONMarshaller(),
 		verbose:    true,
 	}
 	_, err := c.GetInferenceStatistics(context.Background(), modelName, "", options)
@@ -2478,7 +2300,6 @@ func TestGetInferenceStatistics_NonOKStatus(t *testing.T) {
 	c := &client{
 		baseURL:    "http://localhost",
 		httpClient: mockHttpClient,
-		marshaller: marshaller.NewJSONMarshaller(),
 		verbose:    true,
 	}
 	_, err := c.GetInferenceStatistics(context.Background(), modelName, "", options)
@@ -2503,7 +2324,6 @@ func TestGetInferenceStatistics_InvalidJSON(t *testing.T) {
 	c := &client{
 		baseURL:    "http://localhost",
 		httpClient: mockHttpClient,
-		marshaller: marshaller.NewJSONMarshaller(),
 		verbose:    true,
 	}
 	_, err := c.GetInferenceStatistics(context.Background(), modelName, "", options)

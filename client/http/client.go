@@ -7,7 +7,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/Trendyol/go-triton-client/base"
-	"github.com/Trendyol/go-triton-client/marshaller"
 	"github.com/Trendyol/go-triton-client/models"
 	"github.com/Trendyol/go-triton-client/options"
 	"io"
@@ -26,7 +25,6 @@ type client struct {
 	ssl               bool
 	insecure          bool
 	httpClient        base.HttpClient
-	marshaller        base.Marshaller
 	logger            *log.Logger
 }
 
@@ -63,7 +61,6 @@ func NewClient(url string, verbose bool, connectionTimeout float64, networkTimeo
 		insecure:          insecure,
 		httpClient:        base.NewHttpClient(connectionTimeout, insecure, httpClient),
 		logger:            logger,
-		marshaller:        marshaller.NewJSONMarshaller(),
 	}, nil
 }
 
@@ -224,7 +221,7 @@ func (c *client) LoadModel(ctx context.Context, modelName string, config string,
 		loadRequest["parameters"] = parameters
 	}
 
-	requestBody, err := c.marshaller.Marshal(loadRequest)
+	requestBody, err := json.Marshal(loadRequest)
 	if err != nil {
 		return err
 	}
@@ -255,7 +252,7 @@ func (c *client) UnloadModel(ctx context.Context, modelName string, unloadDepend
 		},
 	}
 
-	requestBody, err := c.marshaller.Marshal(unloadRequest)
+	requestBody, err := json.Marshal(unloadRequest)
 	if err != nil {
 		return err
 	}
@@ -334,7 +331,7 @@ func (c *client) GetTraceSettings(ctx context.Context, modelName string, options
 }
 
 func (c *client) UpdateLogSettings(ctx context.Context, request models.LogSettingsRequest, options *options.Options) error {
-	requestBody, err := c.marshaller.Marshal(request)
+	requestBody, err := json.Marshal(request)
 	if err != nil {
 		return err
 	}
@@ -415,7 +412,7 @@ func (c *client) RegisterSystemSharedMemory(ctx context.Context, name string, ke
 		"offset":    offset,
 		"byte_size": byteSize,
 	}
-	requestBody, err := c.marshaller.Marshal(registerRequest)
+	requestBody, err := json.Marshal(registerRequest)
 	if err != nil {
 		return err
 	}
@@ -502,7 +499,7 @@ func (c *client) RegisterCUDASharedMemory(ctx context.Context, name string, rawH
 		"device_id":  deviceID,
 		"byte_size":  byteSize,
 	}
-	requestBody, err := c.marshaller.Marshal(registerRequest)
+	requestBody, err := json.Marshal(registerRequest)
 	if err != nil {
 		return err
 	}
@@ -560,7 +557,7 @@ func (c *client) Infer(
 	options *options.InferOptions,
 ) (base.InferResult, error) {
 	// Prepare the Inference Request
-	requestWrapper := NewRequestWrapper(c.baseURL, modelName, modelVersion, inputs, outputs, c.marshaller, options)
+	requestWrapper := NewRequestWrapper(c.baseURL, modelName, modelVersion, inputs, outputs, options)
 
 	request, err := requestWrapper.PrepareRequest()
 	if err != nil {
