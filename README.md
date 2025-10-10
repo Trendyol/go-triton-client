@@ -1,3 +1,5 @@
+
+[![OpenSSF Scorecard](https://api.scorecard.dev/projects/github.com/Trendyol/go-triton-client/badge)](https://scorecard.dev/viewer/?uri=github.com/Trendyol/go-triton-client)
 # Go Triton Client [![Go Report Card](https://goreportcard.com/badge/github.com/Trendyol/go-triton-client)](https://goreportcard.com/report/github.com/Trendyol/go-triton-client) ![Latest Release](https://img.shields.io/github/v/release/Trendyol/go-triton-client) ![Go Reference](https://pkg.go.dev/badge/github.com/Trendyol/go-triton-client.svg) ![License](https://img.shields.io/github/license/Trendyol/go-triton-client)
 
 # Introduction
