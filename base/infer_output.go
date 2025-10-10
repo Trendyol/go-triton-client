@@ -3,6 +3,7 @@ package base
 import (
 	"encoding/json"
 	"errors"
+
 	"github.com/Trendyol/go-triton-client/converter"
 )
 
@@ -51,35 +52,43 @@ func (output *BaseInferOutput) UnmarshalJSON(data []byte) error {
 	if err := json.Unmarshal(data, &tempStruct); err != nil {
 		return err
 	}
+
 	output.Name = tempStruct.Name
 	output.Shape = tempStruct.Shape
 	output.Datatype = tempStruct.Datatype
 	output.Parameters = tempStruct.Parameters
+
+	var err error
 	switch tempStruct.Datatype {
 	case "FP32":
-		output.Data = converter.ConvertInterfaceSliceToFloat32SliceAsInterface(tempStruct.Data)
+		output.Data, err = converter.ConvertToNumericSlice[float32](tempStruct.Data)
 	case "FP64":
-		output.Data = converter.ConvertInterfaceSliceToFloat64SliceAsInterface(tempStruct.Data)
+		output.Data, err = converter.ConvertToNumericSlice[float64](tempStruct.Data)
 	case "INT32":
-		output.Data = converter.ConvertInterfaceSliceToInt32SliceAsInterface(tempStruct.Data)
+		output.Data, err = converter.ConvertToNumericSlice[int32](tempStruct.Data)
 	case "INT64":
-		output.Data = converter.ConvertInterfaceSliceToInt64SliceAsInterface(tempStruct.Data)
+		output.Data, err = converter.ConvertToNumericSlice[int64](tempStruct.Data)
 	case "UINT32":
-		output.Data = converter.ConvertInterfaceSliceToUint32SliceAsInterface(tempStruct.Data)
+		output.Data, err = converter.ConvertToNumericSlice[uint32](tempStruct.Data)
 	case "UINT64":
-		output.Data = converter.ConvertInterfaceSliceToUint64SliceAsInterface(tempStruct.Data)
+		output.Data, err = converter.ConvertToNumericSlice[uint64](tempStruct.Data)
 	case "BOOL":
-		output.Data = converter.ConvertInterfaceSliceToBoolSliceAsInterface(tempStruct.Data)
-	case "BYTES":
-		convertedData, err := converter.ConvertInterfaceSliceToBytesSliceAsInterface(tempStruct.Data)
-		if err != nil {
-			return err
+		boolData, convErr := converter.ConvertToBoolSlice(tempStruct.Data)
+		if convErr != nil {
+			return convErr
 		}
-		output.Data = convertedData
+		output.Data = converter.ToAnySlice(boolData)
+	case "BYTES":
+		bytesData, convErr := converter.ConvertToBytesSlice(tempStruct.Data)
+		if convErr != nil {
+			return convErr
+		}
+		output.Data = converter.ToAnySlice(bytesData)
 	default:
 		output.Data = tempStruct.Data
 	}
-	return nil
+
+	return err
 }
 
 func (output *BaseInferOutput) GetName() string {

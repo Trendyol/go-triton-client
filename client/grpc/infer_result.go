@@ -60,35 +60,35 @@ func NewInferResult(responseWrapper base.ResponseWrapper, verbose bool) (base.In
 }
 
 func (r *InferResult) AsInt8Slice(name string) ([]int8, error) {
-	return getAsSlice[int8](name, r, converter.DeserializeInt8Tensor)
+	return getAsSlice[int8](name, r, converter.DeserializeNumericSlice[int8])
 }
 
 func (r *InferResult) AsInt16Slice(name string) ([]int16, error) {
-	return getAsSlice[int16](name, r, converter.DeserializeInt16Tensor)
+	return getAsSlice[int16](name, r, converter.DeserializeNumericSlice[int16])
 }
 
 func (r *InferResult) AsInt32Slice(name string) ([]int32, error) {
-	return getAsSlice[int32](name, r, converter.DeserializeInt32Tensor)
+	return getAsSlice[int32](name, r, converter.DeserializeNumericSlice[int32])
 }
 
 func (r *InferResult) AsInt64Slice(name string) ([]int64, error) {
-	return getAsSlice[int64](name, r, converter.DeserializeInt64Tensor)
+	return getAsSlice[int64](name, r, converter.DeserializeNumericSlice[int64])
 }
 
 func (r *InferResult) AsUint8Slice(name string) ([]uint8, error) {
-	return getAsSlice[uint8](name, r, converter.DeserializeUint8Tensor)
+	return getAsSlice[uint8](name, r, converter.DeserializeNumericSlice[uint8])
 }
 
 func (r *InferResult) AsUint16Slice(name string) ([]uint16, error) {
-	return getAsSlice[uint16](name, r, converter.DeserializeUint16Tensor)
+	return getAsSlice[uint16](name, r, converter.DeserializeNumericSlice[uint16])
 }
 
 func (r *InferResult) AsUint32Slice(name string) ([]uint32, error) {
-	return getAsSlice[uint32](name, r, converter.DeserializeUint32Tensor)
+	return getAsSlice[uint32](name, r, converter.DeserializeNumericSlice[uint32])
 }
 
 func (r *InferResult) AsUint64Slice(name string) ([]uint64, error) {
-	return getAsSlice[uint64](name, r, converter.DeserializeUint64Tensor)
+	return getAsSlice[uint64](name, r, converter.DeserializeNumericSlice[uint64])
 }
 
 func (r *InferResult) AsFloat16Slice(name string) ([]float64, error) {
@@ -96,11 +96,11 @@ func (r *InferResult) AsFloat16Slice(name string) ([]float64, error) {
 }
 
 func (r *InferResult) AsFloat32Slice(name string) ([]float32, error) {
-	return getAsSlice[float32](name, r, converter.DeserializeFloat32Tensor)
+	return getAsSlice[float32](name, r, converter.DeserializeNumericSlice[float32])
 }
 
 func (r *InferResult) AsFloat64Slice(name string) ([]float64, error) {
-	return getAsSlice[float64](name, r, converter.DeserializeFloat64Tensor)
+	return getAsSlice[float64](name, r, converter.DeserializeNumericSlice[float64])
 }
 
 func (r *InferResult) AsBoolSlice(name string) ([]bool, error) {

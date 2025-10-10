@@ -5,11 +5,15 @@ import (
 	"encoding/binary"
 	"errors"
 	"fmt"
-	"github.com/x448/float16"
 	"io"
 	"math"
+	"unsafe"
+
+	"github.com/Trendyol/go-triton-client/tensors"
+	"github.com/x448/float16"
 )
 
+// SerializeTensor converts a supported tensor into a byte slice.
 func SerializeTensor(inputTensor any) ([]byte, error) {
 	var buffer bytes.Buffer
 	if err := serializeTensorToWriter(inputTensor, &buffer); err != nil {
@@ -21,314 +25,259 @@ func SerializeTensor(inputTensor any) ([]byte, error) {
 // serializeTensorToWriter writes the tensor data into the provided io.Writer.
 func serializeTensorToWriter(inputTensor any, w io.Writer) error {
 	switch tensor := inputTensor.(type) {
+	// Grouping cases for fixed-size numeric types allows for a single, efficient write.
+	// binary.Write is optimized to handle slices of these types directly.
+	case []int32, []int64, tensors.Uint8Tensor, []uint16, []uint32, []uint64, []float32, []float64:
+		return binary.Write(w, binary.LittleEndian, tensor)
+
+	// The native `int` type can be 32 or 64 bits depending on the architecture.
+	// To ensure consistent serialization, we convert it to a fixed-size type like int64.
 	case []int:
-		for _, v := range tensor {
-			if err := binary.Write(w, binary.LittleEndian, int64(v)); err != nil {
-				return err
-			}
+		// This still requires a loop, but it's necessary for portability.
+		int64Slice := make([]int64, len(tensor))
+		for i, v := range tensor {
+			int64Slice[i] = int64(v)
 		}
-	case []int32:
-		for _, v := range tensor {
-			if err := binary.Write(w, binary.LittleEndian, v); err != nil {
-				return err
-			}
-		}
-	case []int64:
-		for _, v := range tensor {
-			if err := binary.Write(w, binary.LittleEndian, v); err != nil {
-				return err
-			}
-		}
-	case []uint16:
-		for _, v := range tensor {
-			if err := binary.Write(w, binary.LittleEndian, v); err != nil {
-				return err
-			}
-		}
-	case []uint32:
-		for _, v := range tensor {
-			if err := binary.Write(w, binary.LittleEndian, v); err != nil {
-				return err
-			}
-		}
-	case []uint64:
-		for _, v := range tensor {
-			if err := binary.Write(w, binary.LittleEndian, v); err != nil {
-				return err
-			}
-		}
-	case []float32:
-		for _, v := range tensor {
-			if err := binary.Write(w, binary.LittleEndian, v); err != nil {
-				return err
-			}
-		}
-	case []float64:
-		for _, v := range tensor {
-			if err := binary.Write(w, binary.LittleEndian, v); err != nil {
-				return err
-			}
-		}
+		return binary.Write(w, binary.LittleEndian, int64Slice)
+
+	// For bools, we convert to a byte slice first and then write the whole slice.
 	case []bool:
-		for _, v := range tensor {
-			var boolVal byte
+		byteSlice := make([]byte, len(tensor))
+		for i, v := range tensor {
 			if v {
-				boolVal = 1
-			}
-			if err := binary.Write(w, binary.LittleEndian, boolVal); err != nil {
-				return err
+				byteSlice[i] = 1
 			}
 		}
+		_, err := w.Write(byteSlice)
+		return err
+
+	// []byte is already in a serializable format.
 	case []byte:
-		if _, err := w.Write(tensor); err != nil {
-			return err
-		}
+		_, err := w.Write(tensor)
+		return err
+
+	// Strings are variable-length and must be handled individually.
+	// Each string is prefixed with its length.
 	case []string:
 		for _, str := range tensor {
 			strBytes := []byte(str)
-			strLen := int32(len(strBytes))
-			if err := binary.Write(w, binary.LittleEndian, strLen); err != nil {
+			// Write length as int32
+			if err := binary.Write(w, binary.LittleEndian, int32(len(strBytes))); err != nil {
 				return err
 			}
+			// Write the actual string bytes
 			if _, err := w.Write(strBytes); err != nil {
 				return err
 			}
 		}
+		return nil
+
 	default:
 		return errors.New("unsupported tensor datatype")
 	}
-	return nil
 }
 
+// --- Flattening ---
+
+// ToAnySlice is a generic helper function that converts a slice of any type
+// into a slice of `any` (`[]any`).
+func ToAnySlice[T any](slice []T) []any {
+	result := make([]any, len(slice))
+	for i, v := range slice {
+		result[i] = v
+	}
+	return result
+}
+
+// FlattenData converts a typed tensor slice into a generic []any slice.
 func FlattenData(inputTensor any) []any {
 	switch tensor := inputTensor.(type) {
 	case []int:
-		result := make([]any, len(tensor))
-		for i, v := range tensor {
-			result[i] = v
-		}
-		return result
+		return ToAnySlice(tensor)
 	case []int32:
-		result := make([]any, len(tensor))
-		for i, v := range tensor {
-			result[i] = v
-		}
-		return result
+		return ToAnySlice(tensor)
 	case []int64:
-		result := make([]any, len(tensor))
-		for i, v := range tensor {
-			result[i] = v
-		}
-		return result
+		return ToAnySlice(tensor)
 	case []uint16:
-		result := make([]any, len(tensor))
-		for i, v := range tensor {
-			result[i] = v
-		}
-		return result
+		return ToAnySlice(tensor)
 	case []uint32:
-		result := make([]any, len(tensor))
-		for i, v := range tensor {
-			result[i] = v
-		}
-		return result
+		return ToAnySlice(tensor)
 	case []uint64:
-		result := make([]any, len(tensor))
-		for i, v := range tensor {
-			result[i] = v
-		}
-		return result
+		return ToAnySlice(tensor)
 	case []float32:
-		result := make([]any, len(tensor))
-		for i, v := range tensor {
-			result[i] = v
-		}
-		return result
+		return ToAnySlice(tensor)
 	case []float64:
-		result := make([]any, len(tensor))
-		for i, v := range tensor {
-			result[i] = v
-		}
-		return result
+		return ToAnySlice(tensor)
 	case []byte:
-		result := make([]any, len(tensor))
-		for i, v := range tensor {
-			result[i] = v
-		}
-		return result
+		return ToAnySlice(tensor)
 	case []bool:
-		result := make([]any, len(tensor))
-		for i, v := range tensor {
-			result[i] = v
-		}
-		return result
+		return ToAnySlice(tensor)
 	case []string:
-		result := make([]any, len(tensor))
-		for i, v := range tensor {
-			result[i] = v
-		}
-		return result
+		return ToAnySlice(tensor)
 	default:
 		return nil
 	}
 }
 
-func DeserializeInt8Tensor(dataBuffer []byte) ([]int8, error) {
-	return deserializeTensorGeneric(dataBuffer, 1, func(b []byte) int8 { return int8(b[0]) }), nil
+// --- Deserialization ---
+
+// Numeric is a constraint that includes all standard fixed-size numeric types
+// that can be handled directly by binary.Read.
+type Numeric interface {
+	uint8 | int8 | int16 | int32 | int64 | uint16 | uint32 | uint64 | float32 | float64
 }
 
-func DeserializeInt16Tensor(dataBuffer []byte) ([]int16, error) {
-	return deserializeTensorGeneric(dataBuffer, 2, func(b []byte) int16 {
-		return int16(binary.LittleEndian.Uint16(b))
-	}), nil
-}
+// DeserializeNumericSlice provides a high-performance way to deserialize a byte buffer
+// into a slice of a numeric type N. It reads the entire buffer in one call.
+func DeserializeNumericSlice[N Numeric](dataBuffer []byte) ([]N, error) {
+	var element N
+	elementSize := int(unsafe.Sizeof(element))
 
-func DeserializeInt32Tensor(dataBuffer []byte) ([]int32, error) {
-	return deserializeTensorGeneric(dataBuffer, 4, func(b []byte) int32 {
-		return int32(binary.LittleEndian.Uint32(b))
-	}), nil
-}
+	if len(dataBuffer) == 0 {
+		return []N{}, nil
+	}
 
-func DeserializeInt64Tensor(dataBuffer []byte) ([]int64, error) {
-	return deserializeTensorGeneric(dataBuffer, 8, func(b []byte) int64 {
-		return int64(binary.LittleEndian.Uint64(b))
-	}), nil
-}
+	if len(dataBuffer)%elementSize != 0 {
+		return nil, fmt.Errorf("data buffer length (%d) is not a multiple of element size (%d)", len(dataBuffer), elementSize)
+	}
 
-func DeserializeUint8Tensor(dataBuffer []byte) ([]uint8, error) {
-	// []byte is already []uint8.
-	return dataBuffer, nil
-}
+	count := len(dataBuffer) / elementSize
 
-func DeserializeUint16Tensor(dataBuffer []byte) ([]uint16, error) {
-	return deserializeTensorGeneric(dataBuffer, 2, func(b []byte) uint16 {
-		return binary.LittleEndian.Uint16(b)
-	}), nil
-}
-
-func DeserializeUint32Tensor(dataBuffer []byte) ([]uint32, error) {
-	return deserializeTensorGeneric(dataBuffer, 4, func(b []byte) uint32 {
-		return binary.LittleEndian.Uint32(b)
-	}), nil
-}
-
-func DeserializeUint64Tensor(dataBuffer []byte) ([]uint64, error) {
-	return deserializeTensorGeneric(dataBuffer, 8, func(b []byte) uint64 {
-		return binary.LittleEndian.Uint64(b)
-	}), nil
+	// Step 1: Perform the zero-copy conversion to the concrete numeric slice []N.
+	return unsafe.Slice((*N)(unsafe.Pointer(&dataBuffer[0])), count), nil
 }
 
 func DeserializeBoolTensor(dataBuffer []byte) ([]bool, error) {
-	return deserializeTensorGeneric(dataBuffer, 1, func(b []byte) bool {
-		return b[0] != 0
-	}), nil
+	if len(dataBuffer) == 0 {
+		return []bool{}, nil
+	}
+
+	// Direct conversion without function call overhead
+	result := make([]bool, len(dataBuffer))
+	for i, b := range dataBuffer {
+		result[i] = b != 0
+	}
+	return result, nil
 }
 
 func DeserializeFloat16Tensor(dataBuffer []byte) ([]float64, error) {
-	return deserializeTensorGeneric(dataBuffer, 2, func(b []byte) float64 {
-		uint16Value := binary.LittleEndian.Uint16(b)
-		float16Value := float16.Frombits(uint16Value)
-		return float64(float16Value.Float32())
-	}), nil
-}
+	if len(dataBuffer) == 0 {
+		return []float64{}, nil
+	}
+	if len(dataBuffer)%2 != 0 {
+		return nil, fmt.Errorf("data buffer length (%d) is not a multiple of 2", len(dataBuffer))
+	}
 
-func DeserializeFloat32Tensor(dataBuffer []byte) ([]float32, error) {
-	return deserializeTensorGeneric(dataBuffer, 4, func(b []byte) float32 {
-		return math.Float32frombits(binary.LittleEndian.Uint32(b))
-	}), nil
-}
+	// Bulk convert bytes to []uint16 using unsafe pointer (zero-copy)
+	uint16Count := len(dataBuffer) / 2
+	uint16Slice := unsafe.Slice((*uint16)(unsafe.Pointer(&dataBuffer[0])), uint16Count)
 
-func DeserializeFloat64Tensor(dataBuffer []byte) ([]float64, error) {
-	return deserializeTensorGeneric(dataBuffer, 8, func(b []byte) float64 {
-		return math.Float64frombits(binary.LittleEndian.Uint64(b))
-	}), nil
+	// Convert []uint16 to []float64 in single loop
+	result := make([]float64, uint16Count)
+	for i, bits := range uint16Slice {
+		result[i] = float64(float16.Frombits(bits).Float32())
+	}
+	return result, nil
 }
 
 func DeserializeBF16Tensor(encodedTensor []byte) ([]float32, error) {
-	return deserializeTensorGeneric(encodedTensor, 2, func(b []byte) float32 {
-		bits := binary.LittleEndian.Uint16(b)
-		float32Bits := uint32(bits) << 16
-		return math.Float32frombits(float32Bits)
-	}), nil
+	if len(encodedTensor) == 0 {
+		return []float32{}, nil
+	}
+	if len(encodedTensor)%2 != 0 {
+		return nil, fmt.Errorf("data buffer length (%d) is not a multiple of 2", len(encodedTensor))
+	}
+
+	// Bulk convert bytes to []uint16 using unsafe pointer (zero-copy)
+	uint16Count := len(encodedTensor) / 2
+	uint16Slice := unsafe.Slice((*uint16)(unsafe.Pointer(&encodedTensor[0])), uint16Count)
+
+	// Convert []uint16 to []float32 in single loop
+	result := make([]float32, uint16Count)
+	for i, bits := range uint16Slice {
+		result[i] = math.Float32frombits(uint32(bits) << 16)
+	}
+	return result, nil
 }
 
 func DeserializeBytesTensor(encodedTensor []byte) ([]string, error) {
 	var strs []string
-	offset := 0
-	for offset < len(encodedTensor) {
-		if offset+4 > len(encodedTensor) {
-			return nil, fmt.Errorf("unexpected end of encoded tensor")
+	reader := bytes.NewReader(encodedTensor)
+	for reader.Len() > 0 {
+		var length int32
+		if err := binary.Read(reader, binary.LittleEndian, &length); err != nil {
+			return nil, fmt.Errorf("failed to read string length: %w", err)
 		}
-		length := binary.LittleEndian.Uint32(encodedTensor[offset : offset+4])
-		offset += 4
-		if offset+int(length) > len(encodedTensor) {
-			return nil, fmt.Errorf("unexpected end of encoded tensor")
+		if reader.Len() < int(length) {
+			return nil, fmt.Errorf("unexpected end of tensor: string length %d exceeds buffer size %d", length, reader.Len())
 		}
-		strs = append(strs, string(encodedTensor[offset:offset+int(length)]))
-		offset += int(length)
+		strBytes := make([]byte, length)
+		if _, err := io.ReadFull(reader, strBytes); err != nil {
+			return nil, fmt.Errorf("failed to read string bytes: %w", err)
+		}
+		strs = append(strs, string(strBytes))
 	}
 	return strs, nil
 }
 
-// Helper: deserializeTensorGeneric splits dataBuffer into blocks of blockSize and converts each block using convert.
-func deserializeTensorGeneric[T any](dataBuffer []byte, blockSize int, convert func([]byte) T) []T {
-	n := len(dataBuffer) / blockSize
-	result := make([]T, n)
-	for i := 0; i < n; i++ {
-		start := i * blockSize
-		end := start + blockSize
-		result[i] = convert(dataBuffer[start:end])
+// --- Interface Slice Conversion ---
+
+// ConvertibleFromFloat64 is a constraint for numeric types that can be converted from a float64.
+type ConvertibleFromFloat64 interface {
+	int32 | int64 | uint32 | uint64 | float32 | float64
+}
+
+// ConvertToNumericSlice is a generic and type-safe function.
+// It converts []any to []any where each element is converted to type T.
+func ConvertToNumericSlice[T ConvertibleFromFloat64](data []any) ([]any, error) {
+	result := make([]T, len(data))
+	for i, v := range data {
+		switch val := v.(type) {
+		case int:
+			result[i] = T(val)
+		case int32:
+			result[i] = T(val)
+		case int64:
+			result[i] = T(val)
+		case uint32:
+			result[i] = T(val)
+		case uint64:
+			result[i] = T(val)
+		case float32:
+			result[i] = T(val)
+		case float64:
+			result[i] = T(val)
+		default:
+			return nil, fmt.Errorf("invalid element at index %d: expected numeric type, got %T", i, v)
+		}
 	}
-	return result
+	return ToAnySlice[T](result), nil
 }
 
-func ConvertInterfaceSliceToFloat32SliceAsInterface(data []any) []any {
-	return convertInterfaceSlice(data, func(v any) any { return float32(v.(float64)) })
+// ConvertToBoolSlice is a specific, type-safe function for booleans.
+func ConvertToBoolSlice(data []any) ([]bool, error) {
+	result := make([]bool, len(data))
+	for i, v := range data {
+		val, ok := v.(bool)
+		if !ok {
+			return nil, fmt.Errorf("invalid element at index %d: expected bool, got %T", i, v)
+		}
+		result[i] = val
+	}
+	return result, nil
 }
 
-func ConvertInterfaceSliceToFloat64SliceAsInterface(data []any) []any {
-	return convertInterfaceSlice(data, func(v any) any { return v.(float64) })
-}
-
-func ConvertInterfaceSliceToInt32SliceAsInterface(data []any) []any {
-	return convertInterfaceSlice(data, func(v any) any { return int32(v.(float64)) })
-}
-
-func ConvertInterfaceSliceToInt64SliceAsInterface(data []any) []any {
-	return convertInterfaceSlice(data, func(v any) any { return int64(v.(float64)) })
-}
-
-func ConvertInterfaceSliceToUint32SliceAsInterface(data []any) []any {
-	return convertInterfaceSlice(data, func(v any) any { return uint32(v.(float64)) })
-}
-
-func ConvertInterfaceSliceToUint64SliceAsInterface(data []any) []any {
-	return convertInterfaceSlice(data, func(v any) any { return uint64(v.(float64)) })
-}
-
-func ConvertInterfaceSliceToBoolSliceAsInterface(data []any) []any {
-	return convertInterfaceSlice(data, func(v any) any { return v.(bool) })
-}
-
-func ConvertInterfaceSliceToBytesSliceAsInterface(data []any) ([]any, error) {
-	convertedData := make([]any, len(data))
+// ConvertToBytesSlice is a specific, type-safe function for bytes from strings.
+func ConvertToBytesSlice(data []any) ([][]byte, error) {
+	result := make([][]byte, len(data))
 	for i, v := range data {
 		str, ok := v.(string)
 		if !ok {
-			return nil, fmt.Errorf("expected BYTES datatype, got %T", v)
+			return nil, fmt.Errorf("invalid element at index %d: expected string, got %T", i, v)
 		}
-		convertedData[i] = []byte(str)
+		result[i] = []byte(str)
 	}
-	return convertedData, nil
-}
-
-// convertInterfaceSlice is a helper to convert []any to another []any using a converter function.
-func convertInterfaceSlice(data []any, conv func(any) any) []any {
-	result := make([]any, len(data))
-	for i, v := range data {
-		result[i] = conv(v)
-	}
-	return result
+	return result, nil
 }
 
 // Reshape1D converts a flat []T into a 1D slice according to the provided shape.
@@ -369,13 +318,27 @@ func Reshape3D[T any](data []T, shape []int64) ([][][]T, error) {
 	if len(data) != d0*d1*d2 {
 		return nil, fmt.Errorf("data length mismatch: expected %d, got %d", d0*d1*d2, len(data))
 	}
+
+	// 1. Allocate the top-level slice (1st allocation).
 	res := make([][][]T, d0)
-	for i := 0; i < d0; i++ {
-		res[i] = make([][]T, d1)
-		for j := 0; j < d1; j++ {
-			start := (i*d1 + j) * d2
-			res[i][j] = data[start : start+d2]
-		}
+
+	// 2. Allocate all the middle-level slices in one contiguous block (2nd allocation).
+	midSlices := make([][]T, d0*d1)
+
+	// 3. Point the middle slices to the correct locations in the original data.
+	// This loop is very fast as slicing doesn't copy the underlying data.
+	for i := 0; i < d0*d1; i++ {
+		start := i * d2
+		end := start + d2
+		midSlices[i] = data[start:end]
 	}
+
+	// 4. Link the top-level slices to the middle-level slices.
+	for i := 0; i < d0; i++ {
+		start := i * d1
+		end := start + d1
+		res[i] = midSlices[start:end]
+	}
+
 	return res, nil
 }

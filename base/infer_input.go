@@ -2,7 +2,9 @@ package base
 
 import (
 	"fmt"
+
 	"github.com/Trendyol/go-triton-client/converter"
+	"github.com/Trendyol/go-triton-client/tensors"
 )
 
 // InferInput is an interface that defines methods for model inference inputs.
@@ -110,6 +112,8 @@ func GetDatatype(inputTensor any) string {
 		return "INT32"
 	case []int64:
 		return "INT64"
+	case tensors.Uint8Tensor:
+		return "UINT8"
 	case []uint16:
 		return "UINT16"
 	case []uint32:
