@@ -2,6 +2,7 @@ package base
 
 import (
 	"context"
+
 	"github.com/Trendyol/go-triton-client/models"
 	"github.com/Trendyol/go-triton-client/options"
 )
@@ -54,4 +55,6 @@ type Client interface {
 		outputs []InferOutput,
 		options *options.InferOptions,
 	) (InferResult, error)
+
+	Close() error
 }

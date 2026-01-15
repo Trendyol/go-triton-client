@@ -6,15 +6,16 @@ import (
 	"encoding/base64"
 	"encoding/json"
 	"fmt"
-	"github.com/Trendyol/go-triton-client/base"
-	"github.com/Trendyol/go-triton-client/models"
-	"github.com/Trendyol/go-triton-client/options"
 	"io"
 	"log"
 	"net/http"
 	"net/url"
 	"strings"
 	"time"
+
+	"github.com/Trendyol/go-triton-client/base"
+	"github.com/Trendyol/go-triton-client/models"
+	"github.com/Trendyol/go-triton-client/options"
 )
 
 type client struct {
@@ -579,4 +580,9 @@ func (c *client) Infer(
 	// Map the response to the InferResult model
 	responseWrapper := NewResponseWrapper(resp)
 	return NewInferResult(responseWrapper, c.verbose)
+}
+
+func (c *client) Close() error {
+	err := c.httpClient.Close()
+	return err
 }

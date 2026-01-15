@@ -19,9 +19,10 @@ import (
 )
 
 type client struct {
-	verbose bool
-	client  grpc_generated_v2.GRPCInferenceServiceClient
-	logger  *log.Logger
+	verbose        bool
+	client         grpc_generated_v2.GRPCInferenceServiceClient
+	grpcConnection *grpc.ClientConn
+	logger         *log.Logger
 }
 
 // NewClient creates a new gRPCInferenceServerClient by establishing a new gRPC connection.
@@ -46,9 +47,10 @@ func NewClient(url string, verbose bool, connectionTimeout float64, networkTimeo
 	}
 
 	return &client{
-		verbose: verbose,
-		client:  grpc_generated_v2.NewGRPCInferenceServiceClient(grpcConnection),
-		logger:  logger,
+		verbose:        verbose,
+		client:         grpc_generated_v2.NewGRPCInferenceServiceClient(grpcConnection),
+		grpcConnection: grpcConnection,
+		logger:         logger,
 	}, nil
 }
 
@@ -97,9 +99,10 @@ func NewClientWithGrpcConnection(grpcConnection *grpc.ClientConn, verbose bool, 
 	}
 
 	return &client{
-		verbose: verbose,
-		client:  grpc_generated_v2.NewGRPCInferenceServiceClient(grpcConnection),
-		logger:  logger,
+		verbose:        verbose,
+		client:         grpc_generated_v2.NewGRPCInferenceServiceClient(grpcConnection),
+		grpcConnection: grpcConnection,
+		logger:         logger,
 	}, nil
 }
 
@@ -683,4 +686,9 @@ func (c *client) Infer(
 	// Map the response to the InferResult model
 	responseWrapper := NewResponseWrapper(resp)
 	return NewInferResult(responseWrapper, c.verbose)
+}
+
+func (c *client) Close() error {
+	err := c.grpcConnection.Close()
+	return err
 }

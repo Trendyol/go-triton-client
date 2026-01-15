@@ -19,6 +19,8 @@ type HttpClient interface {
 	// Returns the HTTP response and any error encountered.
 	PostWithBytes(baseURL, requestURI string, requestBody []byte, headers, queryParams map[string]string) (*http.Response, error)
 	Do(request *http.Request) (*http.Response, error)
+
+	Close() error
 }
 
 type httpClient struct {
@@ -106,4 +108,8 @@ func (h *httpClient) addQueryParameters(req *http.Request, queryParams map[strin
 		q.Add(key, value)
 	}
 	req.URL.RawQuery = q.Encode()
+}
+func (h *httpClient) Close() error {
+	h.client.CloseIdleConnections()
+	return nil
 }
