@@ -583,6 +583,5 @@ func (c *client) Infer(
 }
 
 func (c *client) Close() error {
-	err := c.httpClient.Close()
-	return err
+	return c.httpClient.Close()
 }

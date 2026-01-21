@@ -689,6 +689,5 @@ func (c *client) Infer(
 }
 
 func (c *client) Close() error {
-	err := c.grpcConnection.Close()
-	return err
+	return c.grpcConnection.Close()
 }
