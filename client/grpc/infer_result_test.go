@@ -148,6 +148,42 @@ func TestInferResult_AsFloat16Slice_Success(t *testing.T) {
 	}
 }
 
+func TestInferResult_AsFloat16Slice32_Success(t *testing.T) {
+	mockController := gomock.NewController(t)
+	defer mockController.Finish()
+
+	mockResponseWrapper := mocks.NewMockResponseWrapper(mockController)
+
+	response := &grpc_generated_v2.ModelInferResponse{
+		ModelName:    "test_model",
+		ModelVersion: "1",
+		Outputs: []*grpc_generated_v2.ModelInferResponse_InferOutputTensor{
+			{
+				Name:     "output0",
+				Datatype: "FP16",
+				Shape:    []int64{2, 2},
+			},
+		},
+		RawOutputContents: [][]byte{make([]byte, 16)},
+	}
+
+	mockResponseWrapper.EXPECT().GetResponse().Return(response).Times(1)
+
+	resultInterface, err := NewInferResult(mockResponseWrapper, true)
+	if err != nil {
+		t.Errorf("Expected no error, got %v", err)
+	}
+	result := resultInterface.(*InferResult)
+
+	data, err := result.AsFloat16Slice32("output0")
+	if err != nil {
+		t.Errorf("Expected no error, got %v", err)
+	}
+	if data == nil {
+		t.Error("Expected data, got nil")
+	}
+}
+
 func TestInferResult_AsFloat32Slice_Success(t *testing.T) {
 	mockController := gomock.NewController(t)
 	defer mockController.Finish()

@@ -13,8 +13,46 @@ import (
 	"github.com/x448/float16"
 )
 
+var fp16ToFp32Table [65536]float32
+
+func init() {
+	for i := 0; i < 65536; i++ {
+		fp16ToFp32Table[i] = float16.Frombits(uint16(i)).Float32()
+	}
+}
+
+func serializeNumericSlice[N Numeric](tensor []N) []byte {
+	if len(tensor) == 0 {
+		return []byte{}
+	}
+	var elem N
+	byteLen := len(tensor) * int(unsafe.Sizeof(elem))
+	return unsafe.Slice((*byte)(unsafe.Pointer(&tensor[0])), byteLen)
+}
+
 // SerializeTensor converts a supported tensor into a byte slice.
 func SerializeTensor(inputTensor any) ([]byte, error) {
+	switch tensor := inputTensor.(type) {
+	case []int32:
+		return serializeNumericSlice(tensor), nil
+	case []int64:
+		return serializeNumericSlice(tensor), nil
+	case tensors.Uint8Tensor:
+		return serializeNumericSlice([]uint8(tensor)), nil
+	case []uint16:
+		return serializeNumericSlice(tensor), nil
+	case []uint32:
+		return serializeNumericSlice(tensor), nil
+	case []uint64:
+		return serializeNumericSlice(tensor), nil
+	case []float32:
+		return serializeNumericSlice(tensor), nil
+	case []float64:
+		return serializeNumericSlice(tensor), nil
+	case []byte:
+		return tensor, nil
+	}
+
 	var buffer bytes.Buffer
 	if err := serializeTensorToWriter(inputTensor, &buffer); err != nil {
 		return nil, err
@@ -172,10 +210,44 @@ func DeserializeFloat16Tensor(dataBuffer []byte) ([]float64, error) {
 	uint16Count := len(dataBuffer) / 2
 	uint16Slice := unsafe.Slice((*uint16)(unsafe.Pointer(&dataBuffer[0])), uint16Count)
 
-	// Convert []uint16 to []float64 in single loop
+	// Convert []uint16 to []float64 using precomputed lookup table and 4x unrolling
 	result := make([]float64, uint16Count)
-	for i, bits := range uint16Slice {
-		result[i] = float64(float16.Frombits(bits).Float32())
+	i := 0
+	for ; i <= uint16Count-4; i += 4 {
+		result[i] = float64(fp16ToFp32Table[uint16Slice[i]])
+		result[i+1] = float64(fp16ToFp32Table[uint16Slice[i+1]])
+		result[i+2] = float64(fp16ToFp32Table[uint16Slice[i+2]])
+		result[i+3] = float64(fp16ToFp32Table[uint16Slice[i+3]])
+	}
+	for ; i < uint16Count; i++ {
+		result[i] = float64(fp16ToFp32Table[uint16Slice[i]])
+	}
+	return result, nil
+}
+
+func DeserializeFloat16Tensor32(dataBuffer []byte) ([]float32, error) {
+	if len(dataBuffer) == 0 {
+		return []float32{}, nil
+	}
+	if len(dataBuffer)%2 != 0 {
+		return nil, fmt.Errorf("data buffer length (%d) is not a multiple of 2", len(dataBuffer))
+	}
+
+	// Bulk convert bytes to []uint16 using unsafe pointer (zero-copy)
+	uint16Count := len(dataBuffer) / 2
+	uint16Slice := unsafe.Slice((*uint16)(unsafe.Pointer(&dataBuffer[0])), uint16Count)
+
+	// Convert []uint16 to []float32 using precomputed lookup table and 4x unrolling
+	result := make([]float32, uint16Count)
+	i := 0
+	for ; i <= uint16Count-4; i += 4 {
+		result[i] = fp16ToFp32Table[uint16Slice[i]]
+		result[i+1] = fp16ToFp32Table[uint16Slice[i+1]]
+		result[i+2] = fp16ToFp32Table[uint16Slice[i+2]]
+		result[i+3] = fp16ToFp32Table[uint16Slice[i+3]]
+	}
+	for ; i < uint16Count; i++ {
+		result[i] = fp16ToFp32Table[uint16Slice[i]]
 	}
 	return result, nil
 }

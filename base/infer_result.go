@@ -28,6 +28,8 @@ type InferResult interface {
 	AsUint64Slice(name string) ([]uint64, error)
 	// AsFloat16Slice returns the output data as a slice of float16 values, converted to float64.
 	AsFloat16Slice(name string) ([]float64, error)
+	// AsFloat16Slice32 returns the output data as a slice of float16 values, converted to float32.
+	AsFloat16Slice32(name string) ([]float32, error)
 	// AsFloat32Slice returns the output data as a slice of float32 values.
 	AsFloat32Slice(name string) ([]float32, error)
 	// AsFloat64Slice returns the output data as a slice of float64 values.

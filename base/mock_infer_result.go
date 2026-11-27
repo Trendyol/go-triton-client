@@ -84,6 +84,21 @@ func (mr *MockInferResultMockRecorder) AsFloat16Slice(name any) *gomock.Call {
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AsFloat16Slice", reflect.TypeOf((*MockInferResult)(nil).AsFloat16Slice), name)
 }
 
+// AsFloat16Slice32 mocks base method.
+func (m *MockInferResult) AsFloat16Slice32(name string) ([]float32, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "AsFloat16Slice32", name)
+	ret0, _ := ret[0].([]float32)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// AsFloat16Slice32 indicates an expected call of AsFloat16Slice32.
+func (mr *MockInferResultMockRecorder) AsFloat16Slice32(name any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AsFloat16Slice32", reflect.TypeOf((*MockInferResult)(nil).AsFloat16Slice32), name)
+}
+
 // AsFloat32Slice mocks base method.
 func (m *MockInferResult) AsFloat32Slice(name string) ([]float32, error) {
 	m.ctrl.T.Helper()
