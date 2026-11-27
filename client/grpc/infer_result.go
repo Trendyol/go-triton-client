@@ -15,8 +15,8 @@ type InferResult struct {
 // NewInferResult creates a new gRPC InferResult instance.
 func NewInferResult(responseWrapper base.ResponseWrapper, verbose bool) (base.InferResult, error) {
 	result := base.InferOutputs{}
-	buffer := []byte{}
-	outputNameToBufferMap := make(map[string]int)
+	var buffer []byte
+	outputNameToBufferMap := make(map[string]int, len(result.Outputs))
 
 	response, ok := responseWrapper.GetResponse().(*grpc_generated_v2.ModelInferResponse)
 	if !ok {
@@ -25,22 +25,38 @@ func NewInferResult(responseWrapper base.ResponseWrapper, verbose bool) (base.In
 	result.ModelName = response.ModelName
 	result.ModelVersion = response.ModelVersion
 
-	bufferIndex := 0
 	outputs := make([]*base.BaseInferOutput, len(response.Outputs))
-	for i, output := range response.Outputs {
-		dataBuffer := response.RawOutputContents[i]
-
-		modelOutput := &base.BaseInferOutput{
+	if len(response.Outputs) == 1 && len(response.RawOutputContents) == 1 {
+		output := response.Outputs[0]
+		buffer = response.RawOutputContents[0]
+		outputNameToBufferMap[output.GetName()] = 0
+		outputs[0] = &base.BaseInferOutput{
 			Name:     output.Name,
 			Datatype: output.Datatype,
 			Shape:    output.Shape,
 		}
+	} else {
+		totalLen := 0
+		for _, b := range response.RawOutputContents {
+			totalLen += len(b)
+		}
+		buffer = make([]byte, 0, totalLen)
+		bufferIndex := 0
+		for i, output := range response.Outputs {
+			dataBuffer := response.RawOutputContents[i]
 
-		outputNameToBufferMap[output.GetName()] = bufferIndex
-		bufferIndex += len(dataBuffer)
-		buffer = append(buffer, dataBuffer...)
+			modelOutput := &base.BaseInferOutput{
+				Name:     output.Name,
+				Datatype: output.Datatype,
+				Shape:    output.Shape,
+			}
 
-		outputs[i] = modelOutput
+			outputNameToBufferMap[output.GetName()] = bufferIndex
+			bufferIndex += len(dataBuffer)
+			buffer = append(buffer, dataBuffer...)
+
+			outputs[i] = modelOutput
+		}
 	}
 
 	result.Outputs = outputs
@@ -93,6 +109,10 @@ func (r *InferResult) AsUint64Slice(name string) ([]uint64, error) {
 
 func (r *InferResult) AsFloat16Slice(name string) ([]float64, error) {
 	return getAsSlice[float64](name, r, converter.DeserializeFloat16Tensor)
+}
+
+func (r *InferResult) AsFloat16Slice32(name string) ([]float32, error) {
+	return getAsSlice[float32](name, r, converter.DeserializeFloat16Tensor32)
 }
 
 func (r *InferResult) AsFloat32Slice(name string) ([]float32, error) {

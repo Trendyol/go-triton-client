@@ -141,6 +141,10 @@ func (r *InferResult) AsFloat16Slice(name string) ([]float64, error) {
 	return getAsSlice[float64](name, r, converter.DeserializeFloat16Tensor)
 }
 
+func (r *InferResult) AsFloat16Slice32(name string) ([]float32, error) {
+	return getAsSlice[float32](name, r, converter.DeserializeFloat16Tensor32)
+}
+
 func (r *InferResult) AsFloat32Slice(name string) ([]float32, error) {
 	return getAsSlice[float32](name, r, converter.DeserializeNumericSlice)
 }

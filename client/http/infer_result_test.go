@@ -157,6 +157,25 @@ func TestInferResult_AsFloat16Slice_HasBinaryData(t *testing.T) {
 	}
 }
 
+func TestInferResult_AsFloat16Slice32_HasBinaryData(t *testing.T) {
+	body := []byte(`{"model_name":"test_model","model_version":"1","outputs":[{"name":"output0","datatype":"FP16","shape":[2,2],"parameters":{"binary_data_size":16}}]}`)
+	mockController := gomock.NewController(t)
+	defer mockController.Finish()
+	mockResponseWrapper := mocks.NewMockResponseWrapper(mockController)
+	mockResponseWrapper.EXPECT().GetHeader("Inference-Header-Content-Length").Return(strconv.Itoa(len(body)))
+	mockResponseWrapper.EXPECT().GetHeader("Content-Encoding").Return("")
+	mockResponseWrapper.EXPECT().GetBody().Return(append(body, make([]byte, 16)...), nil)
+
+	result, _ := NewInferResult(mockResponseWrapper, true)
+	data, err := result.AsFloat16Slice32("output0")
+	if err != nil {
+		t.Errorf("Expected no error, got %v", err)
+	}
+	if data == nil {
+		t.Error("Expected data, got nil")
+	}
+}
+
 func TestInferResult_AsFloat64Slice_HasBinaryData(t *testing.T) {
 	body := []byte(`{"model_name":"test_model","model_version":"1","outputs":[{"name":"output0","datatype":"FP64","shape":[2,2],"parameters":{"binary_data_size":16}}]}`)
 	mockController := gomock.NewController(t)

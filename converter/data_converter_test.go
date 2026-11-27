@@ -460,6 +460,35 @@ func TestDeserializeFloat16Tensor(t *testing.T) {
 	}
 }
 
+func TestDeserializeFloat16Tensor32(t *testing.T) {
+	t.Run("single value", func(t *testing.T) {
+		data := []byte{141, 122}
+		expected := []float32{53664}
+		result, err := DeserializeFloat16Tensor32(data)
+		require.NoError(t, err)
+		assert.Equal(t, expected, result)
+	})
+
+	t.Run("multiple values unrolled", func(t *testing.T) {
+		data := []byte{141, 122, 141, 122, 141, 122, 141, 122, 141, 122}
+		expected := []float32{53664, 53664, 53664, 53664, 53664}
+		result, err := DeserializeFloat16Tensor32(data)
+		require.NoError(t, err)
+		assert.Equal(t, expected, result)
+	})
+
+	t.Run("empty buffer", func(t *testing.T) {
+		result, err := DeserializeFloat16Tensor32([]byte{})
+		require.NoError(t, err)
+		assert.Empty(t, result)
+	})
+
+	t.Run("invalid length", func(t *testing.T) {
+		_, err := DeserializeFloat16Tensor32([]byte{1, 2, 3})
+		require.Error(t, err)
+	})
+}
+
 func TestDeserializeFloat32Tensor(t *testing.T) {
 
 	data := make([]byte, 4)
@@ -960,6 +989,50 @@ func TestReshape3D(t *testing.T) {
 		}
 		if !reflect.DeepEqual(result, expected) {
 			t.Errorf("Result does not match expected value.\nGot: %v\nWant: %v", result, expected)
+		}
+	})
+}
+
+func BenchmarkTritonConverter128(b *testing.B) {
+	benchmarkTritonConverterDim(b, 1, 128)
+}
+
+func BenchmarkTritonConverter768(b *testing.B) {
+	benchmarkTritonConverterDim(b, 1, 768)
+}
+
+func BenchmarkTritonConverterBatch32x768(b *testing.B) {
+	benchmarkTritonConverterDim(b, 32, 768)
+}
+
+func benchmarkTritonConverterDim(b *testing.B, batch, dim int) {
+	fp16Bytes := make([]byte, batch*dim*2)
+	for i := range fp16Bytes {
+		fp16Bytes[i] = byte(i%120 + 1)
+	}
+	int64Input := make([]int64, batch*32)
+	for i := range int64Input {
+		int64Input[i] = int64(i)
+	}
+
+	b.Run("SerializeTensor_int64", func(b *testing.B) {
+		b.ReportAllocs()
+		for i := 0; i < b.N; i++ {
+			_, _ = SerializeTensor(int64Input)
+		}
+	})
+
+	b.Run("DeserializeFloat16Tensor_float64", func(b *testing.B) {
+		b.ReportAllocs()
+		for i := 0; i < b.N; i++ {
+			_, _ = DeserializeFloat16Tensor(fp16Bytes)
+		}
+	})
+
+	b.Run("DeserializeFloat16Tensor32_float32", func(b *testing.B) {
+		b.ReportAllocs()
+		for i := 0; i < b.N; i++ {
+			_, _ = DeserializeFloat16Tensor32(fp16Bytes)
 		}
 	})
 }
